@@ -1,0 +1,86 @@
+Run,Company,Strategy,Prompt Tag,Section,Metric,LLM Score,Human Score,Feedback,Lesson,LLM Output Section
+1,Spotify,Zero-Shot,zero-shot-v1-baseline-1,Mission & Vision,Mission/Vision Insight,5,4,It is well-crafted and concise,Could be more visionary.," ### 1. Mission & Vision
+
+*📌 **Mission:** To unlock the potential of human creativity—by giving a million creative artists the opportunity to live off their art and billions of fans the opportunity to enjoy and be inspired by it.*
+
+*🔭 **Vision:** To shape the future of audio and be the world's leading audio platform, connecting creators and listeners through a personalized and immersive experience.*"
+1,Spotify,Zero-Shot,zero-shot-v1-baseline-1,Product Snapshot,Strategic Depth,3,4,"A good start, but could go deeper...",Use Porter's 5 forces.,"### 2. Product Snapshot
+*   **Target user personas:**
+    *   **The Music Lover:** Primarily focused on discovering new music, listening to favorite artists, and creating personalized playlists.
+    *   **The Podcast Enthusiast:** Seeks engaging audio content, informative discussions, and easy access to a variety of podcasts.
+    *   **The Casual Listener:** Uses Spotify for background music during work, commutes, or social gatherings.
+    *   **The Artist/Creator:** Aims to reach a wider audience, promote their music, and generate revenue through Spotify's platform.
+*   **Most common user pain points:**
+    *   **Limited free tier features:** Frequent ads, lack of offline listening, and restricted mobile controls can frustrate free users.
+    *   **Music discovery limitations:** While Spotify's algorithms are generally good, users sometimes struggle to find niche or up-and-coming artists.
+    *   **Podcast discoverability:** Finding relevant and interesting podcasts can be challenging due to the sheer volume of content.
+    *   **Artist compensation concerns:** Ongoing debate regarding fair compensation for artists on the platform.
+*   **UX bottlenecks or friction areas:**
+    *   **Playlist management:** Organizing and editing large playlists can be cumbersome.
+    *   **Offline download management:** Managing downloaded content and storage space could be more intuitive.
+    *   **Social features:** Opportunities to enhance social interaction and music sharing within the platform.
+*   **Current market position:** Leader. Spotify is the dominant player in the music streaming market with a substantial subscriber base and extensive catalog.
+*   **Key competitive threats and opportunities:**
+    *   **Threats:** Apple Music (deep integration with Apple ecosystem), Amazon Music (bundled with Prime), YouTube Music (vast video library), Tidal (Hi-Fi audio quality), and other regional players.
+    *   **Opportunities:** Expansion into new audio formats (audiobooks, live audio), deeper personalization through AI, enhanced social features, partnerships with hardware manufacturers, and geographic expansion in developing markets.
+"
+1,Spotify,Zero-Shot,zero-shot-v1-baseline-1,Strategic Roadmap,Roadmap Relevance,5,5,Very creative and grouped well.,Add prioritization matrix.,"### 3. Strategic Roadmap
+
+**A. Immediate (0–3 months)**
+
+*   **Improve Offline Download Management:** Enhance the user interface and functionality for managing downloaded songs and podcasts. Allow users to prioritize download queues.
+*   **Address App Stability Issues:** Focus on bug fixes and performance improvements to reduce crashes and improve overall app stability, especially on older devices.
+*   **Enhance Playlist Collaboration:** Allow for more granular control over playlist permissions and collaboration features.
+
+**B. Mid-Term (3–12 months)**
+
+*   **AI-Powered Music Discovery:** Implement more advanced AI algorithms to personalize music recommendations based on listening history, mood, and context (e.g., time of day, location).
+*   **Enhanced Podcast Discovery:** Introduce features like personalized podcast recommendations, curated podcast playlists, and topic-based podcast browsing.
+*   **Integrate with more fitness trackers and wearables.** Deeper integration with wearable fitness tracking devices to tailor music recommendations to workout intensity.
+
+**C. Long-Term (12+ months)**
+
+*   **Interactive Audio Experiences:** Explore interactive audio formats that allow users to actively participate in podcasts or music experiences (e.g., choose-your-own-adventure podcasts, live Q&A sessions with artists).
+*   **Creator Monetization Platform:** Develop a comprehensive platform for artists and creators to monetize their content beyond traditional streaming royalties (e.g., direct fan subscriptions, merchandise sales, virtual concerts).
+*   **Spatial Audio Integration:** Implement spatial audio capabilities for immersive listening experiences, potentially leveraging partnerships with hardware manufacturers to optimize sound reproduction.
+"
+1,Spotify,Zero-Shot,zero-shot-v1-baseline-1,Feature Prioritization (ICE Scoring),Prioritization Clarity,5,4,"Logical reasoning, but room for clarity.",Explain ICE criteria.,"### 4. Feature Prioritization (ICE Scoring)
+
+| Feature | Impact | Confidence | Ease | Total |
+|--------------------------------------------|--------|------------|------|-------|
+| AI-Powered Music Discovery | 9 | 8 | 7 | 24 |
+| Enhanced Podcast Discovery | 8 | 8 | 7 | 23 |
+| Creator Monetization Platform | 8 | 7 | 6 | 21 |
+| Improve Offline Download Management | 7 | 9 | 5 | 21 |
+| Integrate with more fitness trackers and wearables | 7 | 7 | 6 | 20 |
+| Interactive Audio Experiences | 7 | 6 | 7 | 20 |
+| Enhance Playlist Collaboration | 6 | 8 | 5 | 19 |
+| Spatial Audio Integration | 6 | 7 | 6 | 19 |
+| Address App Stability Issues | 9 | 9 | 1 | 19 |
+
+"
+1,Spotify,Zero-Shot,zero-shot-v1-baseline-1,SMART OKRs,OKR Quality,5,3,Unclear how numbers are derived.,Include baseline KPIs.,"### 5. SMART OKRs
+
+*   **OKR 1 (Q1):** Increase user engagement with personalized music recommendations.
+    *   **Objective:** Enhance music discovery through AI-powered recommendations.
+    *   **Key Result 1:** Increase the percentage of users interacting with AI-generated playlists (Daily Mix, Release Radar) by 15%.
+    *   **Key Result 2:** Increase the average time spent listening to recommended tracks per user by 10%.
+    *   **Key Result 3:** Improve the user satisfaction score for music recommendations (measured via in-app surveys) from 4.0 to 4.3 (out of 5).
+
+*   **OKR 2 (Q2):** Grow podcast listenership and engagement.
+    *   **Objective:** Improve podcast discoverability and user experience.
+    *   **Key Result 1:** Increase the number of unique podcast listeners by 20%.
+    *   **Key Result 2:** Increase the average number of podcasts listened to per user per month by 15%.
+    *   **Key Result 3:** Improve podcast completion rate by 10%.
+
+"
+1,Spotify,Zero-Shot,zero-shot-v1-baseline-1,Next-Level Innovation & Product Vision,Visionary Thinking,4,3,Ideas are decent but not out-of-the-box.,Target underserved segments.,"### 6. Next-Level Innovation & Product Vision
+
+*   **Spotify Wellness:** Integrate Spotify with health and wellness platforms. Provide personalized music recommendations based on user's mood, activity levels, and sleep patterns. Partner with meditation apps to offer guided meditations with curated soundscapes. This expands Spotify beyond pure entertainment into a daily wellness companion.
+*   **Spotify Communities:** Create dedicated spaces within the app for fans to connect with artists and other listeners. Implement features like forums, live Q&A sessions, and collaborative playlists curated by fans and artists together. This builds a stronger sense of community and loyalty within the Spotify ecosystem.
+*   **Spotify API for Developers:** Open up Spotify's API to allow third-party developers to create unique and innovative integrations. This could lead to features like:
+    *   Games that adapt to the music playing.
+    *   Fitness apps that use music to modulate workout intensity.
+    *   Smart home integrations that adjust lighting and temperature based on the music.
+*   **Spotify EdTech:** Integrate with educational platforms. Provide study playlists based on user preferences that are tailored to increase focus and learning retention. Partner with schools to provide discounted access.
+"
