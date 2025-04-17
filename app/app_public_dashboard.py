@@ -2,6 +2,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # === Config ===
 st.set_page_config(
@@ -10,50 +12,6 @@ st.set_page_config(
     page_icon="🤖",
     initial_sidebar_state="expanded"
 )
-
-# === Clean Light Theme Styling ===
-st.markdown("""
-    <style>
-        body {
-            background-color: #FAFAFA;
-            color: #1C1C1E;
-        }
-        .stApp {
-            background-color: #FAFAFA;
-        }
-        .css-18e3th9, .css-1d391kg {
-            background-color: transparent;
-            color: #1C1C1E;
-            border: none;
-            box-shadow: none;
-        }
-        .stButton>button {
-            background-color: #4CC9F0;
-            color: white;
-            border: none;
-            border-radius: 8px;
-        }
-        .stButton>button:hover {
-            background-color: #3ABCD4;
-            color: white;
-        }
-        .stTabs [data-baseweb="tab"] {
-            color: #6E6E6E;
-        }
-        .stTabs [aria-selected="true"] {
-            color: #4CC9F0;
-            border-bottom: 2px solid #4CC9F0;
-        }
-        .stSelectbox, .stMultiSelect, .stDataFrame, .stExpander {
-            background-color: transparent;
-            color: #1C1C1E;
-            border: none;
-        }
-        .metric-label {
-            color: #6E6E6E;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 # === Load Data ===
 @st.cache_data
@@ -92,25 +50,38 @@ with tabs[0]:
     col2.metric("Average LLM Score", f"{filtered_df['LLM Score'].mean():.2f}" if not df.empty else "N/A")
     col3.metric("Average Human Score", f"{filtered_df['Human Score'].mean():.2f}" if not df.empty else "N/A")
 
-    st.markdown("### 📈 Human vs LLM Scores per Run")
-    if not filtered_df.empty:
-        fig = px.bar(filtered_df, x="Run", y=["LLM Score", "Human Score"], barmode="group")
-        st.plotly_chart(fig, use_container_width=True)
-
     st.markdown("### 🧾 Evaluation Table")
     st.dataframe(filtered_df, use_container_width=True, height=400)
 
 # === Tab 2: Scores & Trends ===
 with tabs[1]:
     st.markdown("## 📊 Scores & Trends")
-    if not filtered_df.empty:
-        avg_by_strategy = filtered_df.groupby("Strategy")[["LLM Score", "Human Score"]].mean().reset_index()
-        fig2 = px.bar(avg_by_strategy, x="Strategy", y=["LLM Score", "Human Score"], barmode="group")
-        st.plotly_chart(fig2, use_container_width=True)
 
-        avg_by_metric = filtered_df.groupby("Metric")[["LLM Score", "Human Score"]].mean().reset_index()
-        fig3 = px.line(avg_by_metric, x="Metric", y="LLM Score", markers=True, title="LLM Score by Metric")
-        st.plotly_chart(fig3, use_container_width=True)
+    if not filtered_df.empty:
+        st.markdown(f"**Selected Prompt Tags:** {', '.join(filtered_df['Prompt Tag'].unique())}")
+
+        # 🟦 Heatmap by Metric and Prompt
+        pivot_metric = filtered_df.pivot_table(
+            values=["LLM Score", "Human Score"],
+            index="Section",
+            columns="Prompt Tag",
+            aggfunc="mean"
+        )
+
+        st.markdown("### 🔥 LLM Score Heatmap")
+        fig_llm = px.imshow(pivot_metric["LLM Score"].fillna(0), text_auto=True, color_continuous_scale="blues")
+        st.plotly_chart(fig_llm, use_container_width=True)
+
+        st.markdown("### 🧠 Human Score Heatmap")
+        fig_human = px.imshow(pivot_metric["Human Score"].fillna(0), text_auto=True, color_continuous_scale="greens")
+        st.plotly_chart(fig_human, use_container_width=True)
+
+        # 🎯 Combined Score per Section
+        st.markdown("### 📊 Combined Score by Section (LLM + Human Average)")
+        filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
+        avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
+        fig_comb = px.bar(avg_combined, x="Section", y="Combined Score", color="Prompt Tag", barmode="group")
+        st.plotly_chart(fig_comb, use_container_width=True)
 
 # === Tab 3: Prompt Table ===
 with tabs[2]:
@@ -129,7 +100,7 @@ with tabs[2]:
                 st.markdown("**LLM Output Section**:")
                 st.markdown(row["LLM Output Section"])
 
-# === Tab 4: Multi-Agent (Coming Soon) ===
+# === Tab 4: Multi-Agent (Preview) ===
 with tabs[3]:
     st.markdown("## 🤖 Multi-Agent System (Preview)")
     st.info("This section will contain agent logs, recommendations, and real-time chaining.")
@@ -137,7 +108,7 @@ with tabs[3]:
     st.markdown("- Feature Ideator\n- Roadmap Generator\n- OKR Builder\n- Competitive Analyst")
     st.markdown("**Coming soon: Upload documents, run retrieval, view multi-agent flow.**")
 
-# === Tab 5: Embeddings & RAG (Coming Soon) ===
+# === Tab 5: Embeddings & RAG (Future) ===
 with tabs[4]:
     st.markdown("## 🧠 Embeddings + Retrieval Augmented Generation")
     st.info("Upload files, view document embeddings, and test similarity-based prompting")
