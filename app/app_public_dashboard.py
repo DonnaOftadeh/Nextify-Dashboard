@@ -43,7 +43,77 @@ if prompt_tags:
 tabs = st.tabs(["Overview", "Scores & Trends", "Prompt Table", "Multi-Agent System", "Embeddings & RAG"])
 
 # === Tab 1: Overview ===
+
+# === Tab 1: Overview (Refined) ===
 with tabs[0]:
+    st.markdown("## 📊 Overview")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("🧪 Total Runs", f"{filtered_df['Run'].nunique()}")
+    col2.metric("🤖 Avg. LLM Score", f"{filtered_df['LLM Score'].mean():.2f}")
+    col3.metric("👤 Avg. Human Score", f"{filtered_df['Human Score'].mean():.2f}")
+
+    st.markdown("### 📈 Score Heatmaps (LLM vs Human)")
+    pivot = filtered_df.pivot_table(index="Section", columns="Prompt Tag", values=["LLM Score", "Human Score"], aggfunc="mean")
+    num_tags = len(pivot["LLM Score"].columns)
+    fig, ax = plt.subplots(1, 2, figsize=(min(6 + num_tags * 1.5, 20), 6))
+    sns.heatmap(pivot["LLM Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax[0], cbar_kws={'label': 'LLM Score'})
+    ax[0].set_title("🤖 LLM Scores by Section")
+    ax[0].tick_params(axis='x', labelrotation=45)
+
+    sns.heatmap(pivot["Human Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax[1], cbar_kws={'label': 'Human Score'})
+    ax[1].set_title("👤 Human Scores by Section")
+    ax[1].tick_params(axis='x', labelrotation=45)
+    plt.tight_layout()
+    st.pyplot(fig)
+
+    st.markdown("### 🧠 Prompt Evaluation Cards")
+    section_cards = filtered_df.groupby("Section").agg({
+        "LLM Score": "mean",
+        "Human Score": "mean",
+        "Feedback": lambda x: x.iloc[0] if not x.empty else ""
+    }).reset_index()
+
+    clicked_section = st.session_state.get("clicked_section", None)
+
+    for _, row in section_cards.iterrows():
+        section_name = row["Section"]
+        key = f"card_{section_name}"
+        card_clicked = st.button(f"{section_name}", key=key)
+        st.markdown(f'''
+        <div style='
+            border-radius: 12px;
+            padding: 16px;
+            background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+            margin-bottom: 8px;
+            color: #fff;
+            font-family: "Segoe UI", sans-serif;
+        '>
+            <h4 style='margin-bottom: 8px;'>{section_name}</h4>
+            <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+            <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        if card_clicked:
+            st.session_state["clicked_section"] = section_name
+
+        if clicked_section == section_name:
+            matching_rows = filtered_df[filtered_df["Section"] == section_name]
+            for _, subrow in matching_rows.iterrows():
+                st.markdown(f'''
+                <div style='background-color:#ffffff; padding:16px; border-radius:10px; margin-bottom:10px;'>
+                    <strong>Prompt Tag:</strong> {subrow["Prompt Tag"]}  
+                    <br><strong>LLM Score:</strong> {subrow["LLM Score"]} | <strong>Human Score:</strong> {subrow["Human Score"]}
+                    <br><strong>Metric:</strong> {subrow["Metric"]}
+                    <br><strong>Feedback:</strong> {subrow["Feedback"]}
+                    <br><strong>Lesson:</strong> {subrow["Lesson"]}
+                    <br><strong>LLM Output Section:</strong><br>
+                    <pre style="white-space:pre-wrap;">{subrow["LLM Output Section"]}</pre>
+                </div>
+                ''', unsafe_allow_html=True)
+
+    st.markdown("### 📋 Full Table View")
+    st.dataframe(filtered_df)
     st.markdown("## 📊 Overview")
     col1, col2, col3 = st.columns(3)
     col1.metric("Run Count", f"{filtered_df['Run'].nunique() if not df.empty else 0}")
@@ -53,7 +123,78 @@ with tabs[0]:
     st.markdown("### 🧾 Evaluation Table")
     st.dataframe(filtered_df, use_container_width=True, height=400)
 
-# === Tab 2: Scores & Trends ===
+
+# === Tab 2: Scores & Trends (Improved) ===
+with tabs[1]:
+    st.markdown("## 🔍 Score Comparison: Before vs Improved")
+    before = filtered_df[filtered_df["Prompt Tag"].str.contains("baseline", case=False, na=False)]
+    improved = filtered_df[filtered_df["Prompt Tag"].str.contains("improved", case=False, na=False)]
+
+    if not before.empty and not improved.empty:
+        comparison = before.merge(improved, on=["Company", "Strategy", "Section"], suffixes=("_Before", "_Improved"))
+        comparison["Combined Score_Before"] = comparison[["LLM Score_Before", "Human Score_Before"]].mean(axis=1)
+        comparison["Combined Score_Improved"] = comparison[["LLM Score_Improved", "Human Score_Improved"]].mean(axis=1)
+
+        st.markdown("### 📊 Bar Charts – LLM & Human Scores")
+        fig, axs = plt.subplots(1, 2, figsize=(16, 6))
+        sns.barplot(data=comparison, x="Section", y="Human Score_Before", color="#f7e733", label="Before", ax=axs[0])
+        sns.barplot(data=comparison, x="Section", y="Human Score_Improved", color="#7f9cf5", label="Improved", ax=axs[0])
+        axs[0].set_title("👤 Human Scores")
+        axs[0].set_xticklabels(axs[0].get_xticklabels(), rotation=45)
+        axs[0].legend()
+
+        sns.barplot(data=comparison, x="Section", y="LLM Score_Before", color="#f7e733", label="Before", ax=axs[1])
+        sns.barplot(data=comparison, x="Section", y="LLM Score_Improved", color="#7f9cf5", label="Improved", ax=axs[1])
+        axs[1].set_title("🤖 LLM Scores")
+        axs[1].set_xticklabels(axs[1].get_xticklabels(), rotation=45)
+        axs[1].legend()
+        st.pyplot(fig)
+
+        st.markdown("### 🔥 Score Improvement Heatmap")
+        score_improvement = pd.DataFrame({
+            "LLM Δ": comparison["LLM Score_Improved"] - comparison["LLM Score_Before"],
+            "Human Δ": comparison["Human Score_Improved"] - comparison["Human Score_Before"],
+            "Combined Δ": comparison["Combined Score_Improved"] - comparison["Combined Score_Before"],
+        }, index=comparison["Section"])
+
+        fig2, ax2 = plt.subplots(figsize=(10, 5))
+        sns.heatmap(score_improvement, annot=True, cmap=pinkish, center=0, fmt=".2f")
+        ax2.set_title("Score Improvements by Section")
+        st.pyplot(fig2)
+
+        st.markdown("### 📘 Detailed Comparison Table")
+        styled_df = comparison[[
+            "Company", "Strategy", "Prompt Tag_Before", "Prompt Tag_Improved", "Section",
+            "LLM Score_Before", "LLM Score_Improved",
+            "Human Score_Before", "Human Score_Improved",
+            "Combined Score_Before", "Combined Score_Improved"
+        ]].rename(columns={
+            "Prompt Tag_Before": "Prompt Tag (Before)",
+            "Prompt Tag_Improved": "Prompt Tag (Improved)"
+        })
+
+        def highlight_scores(val):
+            try:
+                val = float(val)
+                if val >= 4.5:
+                    return "background-color: #b2f7ef"
+                elif val >= 4.0:
+                    return "background-color: #7f9cf5"
+                else:
+                    return "background-color: #f78fb3"
+            except:
+                return ""
+
+        st.dataframe(styled_df.style.applymap(highlight_scores, subset=[
+            "LLM Score_Before", "LLM Score_Improved",
+            "Human Score_Before", "Human Score_Improved",
+            "Combined Score_Before", "Combined Score_Improved"
+        ]))
+
+        comparison.to_csv("data/model_comparison.csv", index=False)
+    else:
+        st.warning("Baseline and improved prompt tags not found in the selected filters.")
+
 with tabs[1]:
     st.markdown("## 📊 Scores & Trends")
 
@@ -83,7 +224,52 @@ with tabs[1]:
         fig_comb = px.bar(avg_combined, x="Section", y="Combined Score", color="Prompt Tag", barmode="group")
         st.plotly_chart(fig_comb, use_container_width=True)
 
-# === Tab 3: Prompt Table ===
+
+# === Tab 3: Prompt Table (Card-Based) ===
+with tabs[2]:
+    st.markdown("## 📋 Full Prompt Evaluation")
+    selected_prompt = st.selectbox("Choose a Prompt Tag", df["Prompt Tag"].unique())
+    if selected_prompt:
+        prompt_rows = df[df["Prompt Tag"] == selected_prompt]
+
+        clicked_section = st.session_state.get("tab3_clicked_section", None)
+
+        for _, row in prompt_rows.iterrows():
+            section = row["Section"]
+            strategy = row["Strategy"]
+            key = f"prompt_card_{section}"
+
+            if st.button(f"{section} ({strategy})", key=key):
+                st.session_state["tab3_clicked_section"] = section
+
+            st.markdown(f"""
+            <div style='
+                border-radius: 12px;
+                padding: 16px;
+                background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                margin-bottom: 8px;
+                color: #fff;
+                font-family: "Segoe UI", sans-serif;
+            '>
+                <h4 style='margin-bottom: 8px;'>{section} <span style='font-size:0.8em;'>({strategy})</span></h4>
+                <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+                <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if clicked_section == section:
+                st.markdown(f"""
+                <div style='background-color:#ffffff; padding:16px; border-radius:10px; margin-bottom:10px;'>
+                    <strong>Prompt Tag:</strong> {row["Prompt Tag"]}  
+                    <br><strong>LLM Score:</strong> {row["LLM Score"]} | <strong>Human Score:</strong> {row["Human Score"]}
+                    <br><strong>Metric:</strong> {row["Metric"]}
+                    <br><strong>Feedback:</strong> {row["Feedback"]}
+                    <br><strong>Lesson:</strong> {row["Lesson"]}
+                    <br><strong>LLM Output Section:</strong><br>
+                    <pre style="white-space:pre-wrap;">{row["LLM Output Section"]}</pre>
+                </div>
+                """, unsafe_allow_html=True)
+
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
     selected_prompt = st.selectbox("Choose a Prompt Tag", df["Prompt Tag"].unique() if not df.empty else [])
