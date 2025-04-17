@@ -61,15 +61,15 @@ with tabs[0]:
     pivot = filtered_df.pivot_table(index="Section", columns="Prompt Tag", values=["LLM Score", "Human Score"], aggfunc="mean")
     num_tags = len(pivot["LLM Score"].columns)
     fig, ax = plt.subplots(1, 2, figsize=(min(6 + num_tags * 1.5, 20), 6))
-    sns.heatmap(pivot["LLM Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax[0], cbar_kws={'label': 'LLM Score'})
-    ax[0].set_title("🤖 LLM Scores by Section")
-    ax[0].tick_params(axis='x', labelrotation=45)
+    fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(12 + len(pivot["LLM Score"].columns), 6), constrained_layout=True)
+    sns.heatmap(pivot["LLM Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax1, cbar_kws={'label': 'LLM Score'})
+    ax1.set_title("🤖 LLM Scores by Section")
 
-    sns.heatmap(pivot["Human Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax[1], cbar_kws={'label': 'Human Score'})
-    ax[1].set_title("👤 Human Scores by Section")
-    ax[1].tick_params(axis='x', labelrotation=45)
+    ax1.tick_params(axis='x', labelrotation=45)
+    
+    sns.heatmap(pivot["Human Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax2, cbar_kws={'label': 'Human Score'})
     plt.tight_layout()
-    st.pyplot(fig)
+    ax2.set_title("👤 Human Scores by Section")
 
     st.markdown("### 🧠 Prompt Evaluation Cards")
     section_cards = filtered_df.groupby("Section").agg({
@@ -153,7 +153,7 @@ with tabs[1]:
         axs[1].set_title("🤖 LLM Scores")
         axs[1].set_xticklabels(axs[1].get_xticklabels(), rotation=45)
         axs[1].legend()
-        st.pyplot(fig)
+        ax2.set_title("👤 Human Scores by Section")
 
         st.markdown("### 🔥 Score Improvement Heatmap")
         score_improvement = pd.DataFrame({
