@@ -13,11 +13,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# === Color Palette ===
-from matplotlib.colors import LinearSegmentedColormap
-pinkish = LinearSegmentedColormap.from_list("green_blue_pink", ["#b2f7ef", "#7f9cf5", "#f78fb3"])
-
-
 # === Load Data ===
 @st.cache_data
 def load_data():
@@ -60,16 +55,7 @@ with tabs[0]:
     st.markdown("### 📈 Score Heatmaps (LLM vs Human)")
     pivot = filtered_df.pivot_table(index="Section", columns="Prompt Tag", values=["LLM Score", "Human Score"], aggfunc="mean")
     num_tags = len(pivot["LLM Score"].columns)
-    fig, ax = plt.subplots(1, 2, figsize=(min(6 + num_tags * 1.5, 20), 6))
-    fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(12 + len(pivot["LLM Score"].columns), 6), constrained_layout=True)
-    sns.heatmap(pivot["LLM Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax1, cbar_kws={'label': 'LLM Score'})
-    ax1.set_title("🤖 LLM Scores by Section")
-
-    ax1.tick_params(axis='x', labelrotation=45)
     
-    sns.heatmap(pivot["Human Score"], annot=True, fmt=".1f", cmap=pinkish, ax=ax2, cbar_kws={'label': 'Human Score'})
-    plt.tight_layout()
-    ax2.set_title("👤 Human Scores by Section")
 
     st.markdown("### 🧠 Prompt Evaluation Cards")
     section_cards = filtered_df.groupby("Section").agg({
@@ -153,7 +139,7 @@ with tabs[1]:
         axs[1].set_title("🤖 LLM Scores")
         axs[1].set_xticklabels(axs[1].get_xticklabels(), rotation=45)
         axs[1].legend()
-        ax2.set_title("👤 Human Scores by Section")
+        st.pyplot(fig)
 
         st.markdown("### 🔥 Score Improvement Heatmap")
         score_improvement = pd.DataFrame({
