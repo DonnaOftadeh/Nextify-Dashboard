@@ -13,6 +13,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# === Color Palette ===
+from matplotlib.colors import LinearSegmentedColormap
+pinkish = LinearSegmentedColormap.from_list("green_blue_pink", ["#b2f7ef", "#7f9cf5", "#f78fb3"])
+
+
 # === Load Data ===
 @st.cache_data
 def load_data():
