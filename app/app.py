@@ -17,7 +17,7 @@ st.set_page_config(
 # === Load Data ===
 @st.cache_data
 def load_data():
-    df = pd.read_csv("../data/all_experiment_view.csv")
+    df = pd.read_csv("data/all_experiment_view.csv")
     return df
 
 df = load_data()
@@ -81,6 +81,7 @@ with tabs[1]:
         comparison["Combined Score_Before"] = comparison[["LLM Score_Before", "Human Score_Before"]].mean(axis=1)
         comparison["Combined Score_Improved"] = comparison[["LLM Score_Improved", "Human Score_Improved"]].mean(axis=1)
 
+        # Bar charts for Human and LLM scores
         fig, axs = plt.subplots(1, 2, figsize=(14, 6))
         sns.barplot(data=comparison, x="Section", y="Human Score_Improved", color="#3e5efb", label="Improved", ax=axs[0])
         sns.barplot(data=comparison, x="Section", y="Human Score_Before", color="#f7e733", label="Before", ax=axs[0])
@@ -96,6 +97,18 @@ with tabs[1]:
 
         plt.tight_layout()
         st.pyplot(fig)
+
+        st.markdown("### 🧠 Combined Score Heatmap")
+        heat_data = pd.DataFrame({
+            "LLM Δ": comparison["LLM Score_Improved"] - comparison["LLM Score_Before"],
+            "Human Δ": comparison["Human Score_Improved"] - comparison["Human Score_Before"],
+            "Combined Δ": comparison["Combined Score_Improved"] - comparison["Combined Score_Before"]
+        }, index=comparison["Section"])
+
+        fig2, ax2 = plt.subplots(figsize=(10, 5))
+        sns.heatmap(heat_data, annot=True, cmap=blue_yellow, fmt=".2f", center=0)
+        plt.title("📈 Score Improvements by Section")
+        st.pyplot(fig2)
 
 # === Tab 3: Prompt Table ===
 with tabs[2]:
