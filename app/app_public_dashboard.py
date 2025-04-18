@@ -390,7 +390,7 @@ Notifies Feature Ideator if relevance detected."""
 
     st.markdown("---")
     st.markdown("### 🧩 Workflow Diagram")
-    st.image("https://github.com/DonnaOftadeh/Nextify-Dashboard/raw/main/app/MultiAgent%20Workflow.png", use_column_width=True)
+    st.image("https://github.com/DonnaOftadeh/Nextify-Dashboard/raw/main/app/MultiAgent%20Workflow.png", use_container_width=True)
 
     st.markdown('''
     <div style='
