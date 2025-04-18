@@ -68,7 +68,7 @@ with tabs[0]:
     }).reset_index()
 
     for (strategy, tag), group in grouped.groupby(["Strategy", "Prompt Tag"]):
-        st.markdown(f"""
+        st.markdown(f'''
             <div style='display: flex; align-items: center; margin-top: 20px; margin-bottom: 10px;'>
                 <div style='font-size: 20px; margin-right: 10px;'>🎯 <span style="color: #000;">Strategy:</span></div>
                 <div style='
@@ -90,7 +90,7 @@ with tabs[0]:
                     font-family: "Courier New", monospace;
                 '>{tag}</div>
             </div>
-        """, unsafe_allow_html=True)
+        ''', unsafe_allow_html=True)
 
         group['Section'] = pd.Categorical(group['Section'], categories=ordered_sections, ordered=True)
         group = group.sort_values("Section")
