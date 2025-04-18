@@ -44,6 +44,9 @@ if prompt_tags:
 # === Tabs ===
 tabs = st.tabs(["Overview", "Scores & Trends", "Prompt Table", "Multi-Agent System", "Embeddings & RAG"])
 
+# === Tabs ===
+tabs = st.tabs(["Overview", "Scores & Trends", "Prompt Table", "Multi-Agent System", "Embeddings & RAG"])
+
 # === Tab 1: Overview ===
 with tabs[0]:
     st.markdown("## 📊 Overview")
@@ -65,11 +68,33 @@ with tabs[0]:
     }).reset_index()
 
     for (strategy, tag), group in grouped.groupby(["Strategy", "Prompt Tag"]):
-        st.markdown(f"#### 🎯 Strategy: `{strategy}` | 🏷️ Prompt Tag: `{tag}`")
+        st.markdown(f"""
+            <div style='display: flex; align-items: center; margin-top: 20px; margin-bottom: 10px;'>
+                <div style='font-size: 20px; margin-right: 10px;'>🎯 <span style="color: #000;">Strategy:</span></div>
+                <div style='
+                    background-color: #7f9cf5;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-family: "Courier New", monospace;
+                '>{strategy}</div>
+
+                <div style='font-size: 20px; margin-left: 30px; margin-right: 10px;'>🏷️ <span style="color: #000;">Prompt Tag:</span></div>
+                <div style='
+                    background-color: #f78fb3;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-family: "Courier New", monospace;
+                '>"{tag}"</div>
+            </div>
+        """, unsafe_allow_html=True)
 
         group['Section'] = pd.Categorical(group['Section'], categories=ordered_sections, ordered=True)
         group = group.sort_values("Section")
-
+    
         for idx, row in group.iterrows():
             expander_id = f"expand_{strategy}_{tag}_{row['Section']}"
             with st.container():
@@ -102,35 +127,6 @@ with tabs[0]:
                     st.dataframe(subset_df)
 st.markdown("### 🧾 Evaluation Table")
 st.dataframe(filtered_df, use_container_width=True, height=400)
-
-# === Tab 2: Scores & Trends ===
-with tabs[1]:
-    st.markdown("## 📊 Scores & Trends")
-
-    if not filtered_df.empty:
-        st.markdown(f"**Selected Prompt Tags:** {', '.join(filtered_df['Prompt Tag'].unique())}")
-
-        pivot_metric = filtered_df.pivot_table(
-            values=["LLM Score", "Human Score"],
-            index="Section",
-            columns="Prompt Tag",
-            aggfunc="mean"
-        )
-
-        st.markdown("### 🔥 LLM Score Heatmap")
-        fig_llm = px.imshow(pivot_metric["LLM Score"].fillna(0), text_auto=True, color_continuous_scale="blues")
-        st.plotly_chart(fig_llm, use_container_width=True)
-
-        st.markdown("### 🧠 Human Score Heatmap")
-        fig_human = px.imshow(pivot_metric["Human Score"].fillna(0), text_auto=True, color_continuous_scale="greens")
-        st.plotly_chart(fig_human, use_container_width=True)
-
-        st.markdown("### 📊 Combined Score by Section (LLM + Human Average)")
-        filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
-        avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
-        fig_comb = px.bar(avg_combined, x="Section", y="Combined Score", color="Prompt Tag", barmode="group")
-        st.plotly_chart(fig_comb, use_container_width=True)
-
 # === Tab 3: Prompt Table ===
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
