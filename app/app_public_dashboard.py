@@ -126,7 +126,6 @@ with tabs[1]:
             unsafe_allow_html=True
         )
 
-        # Heatmaps
         pivot_metric = filtered_df.pivot_table(
             values=["LLM Score", "Human Score"],
             index="Section",
@@ -142,7 +141,7 @@ with tabs[1]:
             color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
         )
         fig_llm.update_layout(margin=dict(t=20, l=60, r=20, b=20))
-        st.plotly_chart(fig_llm, use_container_width=True)
+        st.plotly_chart(fig_llm, use_container_width=True, key="llm_heatmap")
 
         # === Human Score Heatmap ===
         st.markdown("### 🧠 <span style='color:#7f9cf5;'>Human Score Heatmap</span>", unsafe_allow_html=True)
@@ -152,7 +151,7 @@ with tabs[1]:
             color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
         )
         fig_human.update_layout(margin=dict(t=20, l=60, r=20, b=20))
-        st.plotly_chart(fig_human, use_container_width=True)
+        st.plotly_chart(fig_human, use_container_width=True, key="human_heatmap")
 
         # === Combined Score Bar Chart ===
         st.markdown("### 📊 <span style='color:#7f9cf5;'>Combined Score by Section</span>", unsafe_allow_html=True)
@@ -166,8 +165,7 @@ with tabs[1]:
             color_discrete_sequence=["#b2f7ef", "#7f9cf5", "#f78fb3"]
         )
         fig_comb.update_layout(barmode="group", xaxis_title="Section", yaxis_title="Avg Combined Score")
-        st.plotly_chart(fig_comb, use_container_width=True)
-        st.plotly_chart(fig_comb, use_container_width=True)
+        st.plotly_chart(fig_comb, use_container_width=True, key="combined_score_chart")
 
 # === Tab 3: Prompt Table ===
 with tabs[2]:
