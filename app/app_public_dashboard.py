@@ -1,12 +1,11 @@
+
 # app/app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
-
 from matplotlib.colors import LinearSegmentedColormap
-
 
 # === Config ===
 st.set_page_config(
@@ -53,6 +52,42 @@ with tabs[0]:
     col2.metric("Average LLM Score", f"{filtered_df['LLM Score'].mean():.2f}" if not df.empty else "N/A")
     col3.metric("Average Human Score", f"{filtered_df['Human Score'].mean():.2f}" if not df.empty else "N/A")
 
+    st.markdown("### 🧠 Prompt Evaluation Cards")
+    section_cards = filtered_df.groupby("Section").agg({
+        "LLM Score": "mean",
+        "Human Score": "mean",
+        "Feedback": lambda x: x.iloc[0] if not x.empty else "",
+        "LLM Output Section": lambda x: x.iloc[0] if not x.empty else "",
+        "Prompt Tag": lambda x: x.iloc[0] if not x.empty else ""
+    }).reset_index()
+
+    for idx, row in section_cards.iterrows():
+        expander_id = f"expand_{idx}_overview"
+        with st.container():
+            expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
+            st.markdown(f'''
+            <div style='
+                border-radius: 12px;
+                padding: 16px;
+                background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                margin-bottom: 16px;
+                color: #fff;
+                font-family: "Segoe UI", sans-serif;
+            '>
+                <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
+                <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+                <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+            </div>
+            ''', unsafe_allow_html=True)
+
+            if expand:
+                st.markdown(f"#### 📘 Full LLM Output for `{row['Section']}`")
+                st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
+
+                st.markdown(f"#### 📋 All Entries for `{row['Section']}`")
+                subset_df = filtered_df[filtered_df['Section'] == row['Section']]
+                st.dataframe(subset_df)
+
     st.markdown("### 🧾 Evaluation Table")
     st.dataframe(filtered_df, use_container_width=True, height=400)
 
@@ -63,7 +98,6 @@ with tabs[1]:
     if not filtered_df.empty:
         st.markdown(f"**Selected Prompt Tags:** {', '.join(filtered_df['Prompt Tag'].unique())}")
 
-        # 🟦 Heatmap by Metric and Prompt
         pivot_metric = filtered_df.pivot_table(
             values=["LLM Score", "Human Score"],
             index="Section",
@@ -79,7 +113,6 @@ with tabs[1]:
         fig_human = px.imshow(pivot_metric["Human Score"].fillna(0), text_auto=True, color_continuous_scale="greens")
         st.plotly_chart(fig_human, use_container_width=True)
 
-        # 🎯 Combined Score per Section
         st.markdown("### 📊 Combined Score by Section (LLM + Human Average)")
         filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
         avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
@@ -100,7 +133,7 @@ with tabs[2]:
                 st.markdown(f"**Feedback**: {row['Feedback']}")
                 st.markdown(f"**Lesson**: {row['Lesson']}")
                 st.markdown("---")
-                st.markdown("**LLM Output Section**:")
+                st.markdown("**LLM Output Section:**")
                 st.markdown(row["LLM Output Section"])
 
 # === Tab 4: Multi-Agent (Preview) ===
@@ -108,7 +141,10 @@ with tabs[3]:
     st.markdown("## 🤖 Multi-Agent System (Preview)")
     st.info("This section will contain agent logs, recommendations, and real-time chaining.")
     st.markdown("**Planned agents:**")
-    st.markdown("- Feature Ideator\n- Roadmap Generator\n- OKR Builder\n- Competitive Analyst")
+    st.markdown("- Feature Ideator
+- Roadmap Generator
+- OKR Builder
+- Competitive Analyst")
     st.markdown("**Coming soon: Upload documents, run retrieval, view multi-agent flow.**")
 
 # === Tab 5: Embeddings & RAG (Future) ===
@@ -118,38 +154,3 @@ with tabs[4]:
     uploaded_file = st.file_uploader("Upload Document (PDF, TXT)", type=["pdf", "txt"])
     if uploaded_file:
         st.success(f"Uploaded {uploaded_file.name}. Embedding + RAG view coming soon.")
-    st.markdown("### 🧠 Prompt Evaluation Cards")
-    section_cards = filtered_df.groupby("Section").agg({
-        "LLM Score": "mean",
-        "Human Score": "mean",
-        "Feedback": lambda x: x.iloc[0] if not x.empty else "",
-        "LLM Output Section": lambda x: x.iloc[0] if not x.empty else "",
-        "Prompt Tag": lambda x: x.iloc[0] if not x.empty else ""
-    }).reset_index()
-
-    for idx, row in section_cards.iterrows():
-        expander_id = f"expand_{idx}"
-        with st.container():
-            expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
-            st.markdown(f"""
-            <div style='
-                border-radius: 12px;
-                padding: 16px;
-                background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
-                margin-bottom: 16px;
-                color: #fff;
-                font-family: "Segoe UI", sans-serif;
-            '>
-                <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
-                <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
-                <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-            if expand:
-                st.markdown(f"**Prompt Tag:** `{row['Prompt Tag']}`")
-                st.markdown("**LLM Output Section:**")
-                st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
-                st.markdown("---")
-
-
