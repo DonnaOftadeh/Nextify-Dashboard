@@ -256,7 +256,7 @@ with tabs[2]:
         group = group.sort_values("Section")
 
         for idx, row in group.iterrows():
-            expander_id = f"prompt_tab_expand_{strategy}_{tag}_{row['Section']}"
+            expander_id = f"tab3_expand_{strategy}_{tag}_{row['Section']}"
             with st.container():
                 expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
                 st.markdown(f'''
@@ -275,6 +275,7 @@ with tabs[2]:
                 ''', unsafe_allow_html=True)
 
                 if expand:
+                    # Full LLM Output Section (styled)
                     st.markdown(f"""
                     <h4 style='margin-top: 30px;'>
                     📘 <span style="font-weight: 600;">Full LLM Output for</span>
@@ -287,6 +288,7 @@ with tabs[2]:
 
                     st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
 
+                    # Table of all entries
                     st.markdown(f"""
                     <h4 style='margin-top: 30px;'>
                     🗂️ <span style="font-weight: 600;">All Entries for</span>
@@ -302,8 +304,7 @@ with tabs[2]:
                         (filtered_df['Prompt Tag'] == tag) &
                         (filtered_df['Section'] == row['Section'])
                     ]
-                    st.dataframe(subset_df)
-                    
+                    st.dataframe(subset_df)        
 # === Tab 4: Multi-Agent System ===
 with tabs[3]:
     st.markdown("## 🤖 Multi-Agent System (Preview)")
