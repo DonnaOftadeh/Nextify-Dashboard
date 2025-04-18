@@ -123,17 +123,20 @@ with tabs[1]:
         selected_strategy = ", ".join(filtered_df['Strategy'].unique())
         selected_tags = ", ".join(filtered_df['Prompt Tag'].unique())
 
-        # Strategy & Prompt Tag banner
+        # 🎯 Strategy & Prompt Tag — split lines, styled
         st.markdown(
             f"""
-            <div style='margin-top: 10px; margin-bottom: 20px; font-size: 18px;'>
-                🎯 <strong>Strategy:</strong>
-                <span style='background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
-                            font-family: Courier New, monospace; font-weight: bold;'>{selected_strategy}</span>
-                &nbsp;&nbsp;
-                🏷️ <strong>Prompt Tags:</strong>
-                <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
-                            font-family: Courier New, monospace; font-weight: bold;'>{selected_tags}</span>
+            <div style='margin-top: 10px; margin-bottom: 10px; font-size: 18px; text-align: left;'>
+                <div>
+                    🎯 <strong>Strategy:</strong><br>
+                    <span style='background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                                font-family: Courier New, monospace; font-weight: bold;'>{selected_strategy}</span>
+                </div>
+                <div style="margin-top: 10px;">
+                    🏷️ <strong>Prompt Tags:</strong><br>
+                    <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
+                                font-family: Courier New, monospace; font-weight: bold;'>{selected_tags}</span>
+                </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -149,7 +152,7 @@ with tabs[1]:
         # 🔥 LLM Score Heatmap
         st.markdown("---")
         st.markdown(
-            "<div style='text-align: right; font-size: 22px; color: #7f9cf5; font-weight: bold; margin-bottom: 12px;'>🔥 LLM Score Heatmap</div>",
+            "<h4 style='color: #7f9cf5; font-weight: bold; text-align: left;'>🔥 LLM Score Heatmap</h4>",
             unsafe_allow_html=True
         )
         fig_llm = px.imshow(
@@ -161,8 +164,8 @@ with tabs[1]:
             width=900,
             height=500,
             margin=dict(t=20, l=20, r=20, b=20),
-            xaxis=dict(title=dict(text="Prompt Tag", font=dict(size=14, color="black", family="Arial", weight="bold"))),
-            yaxis=dict(title=dict(text="Section", font=dict(size=14, color="black", family="Arial", weight="bold")))
+            xaxis_title=dict(text="Prompt Tag", font=dict(size=14, color="black", family="Arial", weight="bold")),
+            yaxis_title=dict(text="Section", font=dict(size=14, color="black", family="Arial", weight="bold"))
         )
         st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
         st.plotly_chart(fig_llm, use_container_width=False, key="llm_heatmap")
@@ -171,7 +174,7 @@ with tabs[1]:
         # 🧠 Human Score Heatmap
         st.markdown("---")
         st.markdown(
-            "<div style='text-align: right; font-size: 22px; color: #7f9cf5; font-weight: bold; margin-bottom: 12px;'>🧠 Human Score Heatmap</div>",
+            "<h4 style='color: #7f9cf5; font-weight: bold; text-align: left;'>🧠 Human Score Heatmap</h4>",
             unsafe_allow_html=True
         )
         fig_human = px.imshow(
@@ -183,8 +186,8 @@ with tabs[1]:
             width=900,
             height=500,
             margin=dict(t=20, l=20, r=20, b=20),
-            xaxis=dict(title=dict(text="Prompt Tag", font=dict(size=14, color="black", family="Arial", weight="bold"))),
-            yaxis=dict(title=dict(text="Section", font=dict(size=14, color="black", family="Arial", weight="bold")))
+            xaxis_title=dict(text="Prompt Tag", font=dict(size=14, color="black", family="Arial", weight="bold")),
+            yaxis_title=dict(text="Section", font=dict(size=14, color="black", family="Arial", weight="bold"))
         )
         st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
         st.plotly_chart(fig_human, use_container_width=False, key="human_heatmap")
@@ -193,7 +196,7 @@ with tabs[1]:
         # 📊 Combined Score Bar Chart
         st.markdown("---")
         st.markdown(
-            "<div style='text-align: right; font-size: 22px; color: #7f9cf5; font-weight: bold; margin-bottom: 12px;'>📊 Combined Score by Section</div>",
+            "<h4 style='color: #7f9cf5; font-weight: bold; text-align: left;'>📊 Combined Score by Section</h4>",
             unsafe_allow_html=True
         )
         filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
@@ -210,18 +213,18 @@ with tabs[1]:
             barmode="group",
             width=900,
             margin=dict(t=20, l=20, r=20, b=20),
-            xaxis=dict(title_font=dict(size=14, family="Arial", color="black", weight="bold")),
-            yaxis=dict(title_font=dict(size=14, family="Arial", color="black", weight="bold"))
+            xaxis_title=dict(text="Section", font=dict(size=14, family="Arial", color="black", weight="bold")),
+            yaxis_title=dict(text="Combined Score", font=dict(size=14, family="Arial", color="black", weight="bold"))
         )
         st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
         st.plotly_chart(fig_comb, use_container_width=False, key="combined_chart")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # 📋 Table
+        # 📋 Table Below
         st.markdown("---")
         st.markdown("### 📋 <span style='color:#7f9cf5;'>Combined Score Table</span>", unsafe_allow_html=True)
         st.dataframe(avg_combined, use_container_width=True, height=350)
-        
+
 # === Tab 3: Prompt Table ===
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
