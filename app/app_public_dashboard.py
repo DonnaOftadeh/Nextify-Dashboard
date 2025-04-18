@@ -413,10 +413,48 @@ Notifies Feature Ideator if relevance detected."""
     ''', unsafe_allow_html=True)
 
     
-# === Tab 5: Embeddings & RAG (Future) ===
+# === Tab 5: Embeddings & RAG (Styled like Prompt Cards) ===
 with tabs[4]:
     st.markdown("## 🧠 Embeddings + Retrieval Augmented Generation")
-    st.info("Upload files, view document embeddings, and test similarity-based prompting")
+
+    st.markdown("### 📄 Upload a Document for Testing")
+
     uploaded_file = st.file_uploader("Upload Document (PDF, TXT)", type=["pdf", "txt"])
+
     if uploaded_file:
-        st.success(f"Uploaded {uploaded_file.name}. Embedding + RAG view coming soon.")
+        st.success(f"✅ Uploaded file: `{uploaded_file.name}`")
+
+        # Styled card container
+        st.markdown(f'''
+        <div style='
+            border-radius: 12px;
+            padding: 16px;
+            background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+            margin-top: 20px;
+            color: white;
+            font-family: "Segoe UI", sans-serif;
+        '>
+            <h4 style='margin-bottom: 8px;'>📚 {uploaded_file.name}</h4>
+            <p>This file will be embedded and used in a RAG query system (simulated for now).</p>
+            <p style='font-size: 0.9em;'>Coming soon: vectorization, similarity scoring, and real-time retrieval from uploaded documents.</p>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    else:
+        st.info("Please upload a document above to simulate embeddings and RAG response.")
+
+    # Optional coming soon footer
+    st.markdown('''
+    <div style='
+        margin-top: 40px;
+        border-radius: 12px;
+        padding: 16px;
+        background: linear-gradient(to right, #f78fb3, #7f9cf5);
+        color: white;
+        font-family: "Segoe UI", sans-serif;
+        text-align: center;
+    '>
+        <h4 style='margin: 0;'>🚧 Embedding visualization and retrieval testing coming soon!</h4>
+    </div>
+    ''', unsafe_allow_html=True)
+
