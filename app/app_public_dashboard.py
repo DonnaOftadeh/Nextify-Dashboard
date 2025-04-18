@@ -120,9 +120,22 @@ with tabs[1]:
     st.markdown("## 📊 <span style='color:#7f9cf5;'>Scores & Trends</span>", unsafe_allow_html=True)
 
     if not filtered_df.empty:
+        selected_strategy = ", ".join(filtered_df['Strategy'].unique())
+        selected_tags = ", ".join(filtered_df['Prompt Tag'].unique())
+
+        # Strategy & Prompt Tag banner
         st.markdown(
-            f"<span style='font-size:16px;'><strong>🎯 Selected Prompt Tags:</strong> "
-            f"<span style='color:#f78fb3;'>{', '.join(filtered_df['Prompt Tag'].unique())}</span></span>",
+            f"""
+            <div style='margin-top: 10px; margin-bottom: 20px; font-size: 18px;'>
+                🎯 <strong>Strategy:</strong>
+                <span style='background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{selected_strategy}</span>
+                &nbsp;&nbsp;
+                🏷️ <strong>Prompt Tags:</strong>
+                <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{selected_tags}</span>
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
@@ -133,30 +146,59 @@ with tabs[1]:
             aggfunc="mean"
         )
 
-        # === LLM Score Heatmap ===
-        st.markdown("### 🔥 <span style='color:#7f9cf5;'>LLM Score Heatmap</span>", unsafe_allow_html=True)
+        # 🔥 LLM Score Heatmap
+        st.markdown("---")
+        st.markdown(
+            "<div style='text-align: right; font-size: 22px; color: #7f9cf5; font-weight: bold; margin-bottom: 12px;'>🔥 LLM Score Heatmap</div>",
+            unsafe_allow_html=True
+        )
         fig_llm = px.imshow(
             pivot_metric["LLM Score"].fillna(0),
             text_auto=True,
             color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
         )
-        fig_llm.update_layout(margin=dict(t=20, l=60, r=20, b=20))
-        st.plotly_chart(fig_llm, use_container_width=True, key="llm_heatmap")
+        fig_llm.update_layout(
+            width=900,
+            height=500,
+            margin=dict(t=20, l=20, r=20, b=20),
+            xaxis=dict(title=dict(text="Prompt Tag", font=dict(size=14, color="black", family="Arial", weight="bold"))),
+            yaxis=dict(title=dict(text="Section", font=dict(size=14, color="black", family="Arial", weight="bold")))
+        )
+        st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
+        st.plotly_chart(fig_llm, use_container_width=False, key="llm_heatmap")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        # === Human Score Heatmap ===
-        st.markdown("### 🧠 <span style='color:#7f9cf5;'>Human Score Heatmap</span>", unsafe_allow_html=True)
+        # 🧠 Human Score Heatmap
+        st.markdown("---")
+        st.markdown(
+            "<div style='text-align: right; font-size: 22px; color: #7f9cf5; font-weight: bold; margin-bottom: 12px;'>🧠 Human Score Heatmap</div>",
+            unsafe_allow_html=True
+        )
         fig_human = px.imshow(
             pivot_metric["Human Score"].fillna(0),
             text_auto=True,
             color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
         )
-        fig_human.update_layout(margin=dict(t=20, l=60, r=20, b=20))
-        st.plotly_chart(fig_human, use_container_width=True, key="human_heatmap")
+        fig_human.update_layout(
+            width=900,
+            height=500,
+            margin=dict(t=20, l=20, r=20, b=20),
+            xaxis=dict(title=dict(text="Prompt Tag", font=dict(size=14, color="black", family="Arial", weight="bold"))),
+            yaxis=dict(title=dict(text="Section", font=dict(size=14, color="black", family="Arial", weight="bold")))
+        )
+        st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
+        st.plotly_chart(fig_human, use_container_width=False, key="human_heatmap")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        # === Combined Score Bar Chart ===
-        st.markdown("### 📊 <span style='color:#7f9cf5;'>Combined Score by Section</span>", unsafe_allow_html=True)
+        # 📊 Combined Score Bar Chart
+        st.markdown("---")
+        st.markdown(
+            "<div style='text-align: right; font-size: 22px; color: #7f9cf5; font-weight: bold; margin-bottom: 12px;'>📊 Combined Score by Section</div>",
+            unsafe_allow_html=True
+        )
         filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
         avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
+
         fig_comb = px.bar(
             avg_combined,
             x="Section",
@@ -164,9 +206,22 @@ with tabs[1]:
             color="Prompt Tag",
             color_discrete_sequence=["#b2f7ef", "#7f9cf5", "#f78fb3"]
         )
-        fig_comb.update_layout(barmode="group", xaxis_title="Section", yaxis_title="Avg Combined Score")
-        st.plotly_chart(fig_comb, use_container_width=True, key="combined_score_chart")
+        fig_comb.update_layout(
+            barmode="group",
+            width=900,
+            margin=dict(t=20, l=20, r=20, b=20),
+            xaxis=dict(title_font=dict(size=14, family="Arial", color="black", weight="bold")),
+            yaxis=dict(title_font=dict(size=14, family="Arial", color="black", weight="bold"))
+        )
+        st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
+        st.plotly_chart(fig_comb, use_container_width=False, key="combined_chart")
+        st.markdown("</div>", unsafe_allow_html=True)
 
+        # 📋 Table
+        st.markdown("---")
+        st.markdown("### 📋 <span style='color:#7f9cf5;'>Combined Score Table</span>", unsafe_allow_html=True)
+        st.dataframe(avg_combined, use_container_width=True, height=350)
+        
 # === Tab 3: Prompt Table ===
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
