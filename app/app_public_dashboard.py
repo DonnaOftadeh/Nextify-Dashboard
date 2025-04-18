@@ -88,7 +88,7 @@ with tabs[0]:
                     border-radius: 6px;
                     font-weight: bold;
                     font-family: "Courier New", monospace;
-                '>"{tag}"</div>
+                '>{tag}</div>
             </div>
         """, unsafe_allow_html=True)
 
