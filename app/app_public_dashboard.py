@@ -366,7 +366,7 @@ Notifies Feature Ideator if relevance detected."""
     st.markdown("### 🧠 Agent Modules")
 
     for idx, agent in enumerate(agents):
-        expander_id = f"agent_{idx}"
+        expander_id = f"tab4_agent_{idx}"
         expand = st.checkbox(f"⬇️ {agent['name']}", key=expander_id)
 
         st.markdown(f'''
@@ -413,8 +413,6 @@ Notifies Feature Ideator if relevance detected."""
         <h4 style='margin: 0;'>🚧 More agents, live chaining & real-time orchestration coming soon!</h4>
     </div>
     ''', unsafe_allow_html=True)
-
-
 # === Tab 5: Embeddings & RAG (Future) ===
 with tabs[4]:
     st.markdown("## 🧠 Embeddings + Retrieval Augmented Generation")
