@@ -52,14 +52,22 @@ with tabs[0]:
     col2.metric("Average LLM Score", f"{filtered_df['LLM Score'].mean():.2f}" if not df.empty else "N/A")
     col3.metric("Average Human Score", f"{filtered_df['Human Score'].mean():.2f}" if not df.empty else "N/A")
 
+    
     st.markdown("### 🧠 Prompt Evaluation Cards")
-    section_cards = filtered_df.groupby("Section").agg({
-        "LLM Score": "mean",
-        "Human Score": "mean",
-        "Feedback": lambda x: x.iloc[0] if not x.empty else "",
-        "LLM Output Section": lambda x: x.iloc[0] if not x.empty else "",
-        "Prompt Tag": lambda x: x.iloc[0] if not x.empty else ""
-    }).reset_index()
+
+    ordered_sections = filtered_df['Section'].dropna().unique().tolist()
+    section_cards = (
+        filtered_df.groupby("Section").agg({
+            "LLM Score": "mean",
+            "Human Score": "mean",
+            "Feedback": lambda x: x.iloc[0] if not x.empty else "",
+            "LLM Output Section": lambda x: x.iloc[0] if not x.empty else "",
+            "Prompt Tag": lambda x: x.iloc[0] if not x.empty else ""
+        }).reset_index()
+    )
+
+    section_cards['Section'] = pd.Categorical(section_cards['Section'], categories=ordered_sections, ordered=True)
+    section_cards = section_cards.sort_values('Section')
 
     for idx, row in section_cards.iterrows():
         expander_id = f"expand_{idx}_overview"
@@ -87,9 +95,8 @@ with tabs[0]:
                 st.markdown(f"#### 📋 All Entries for `{row['Section']}`")
                 subset_df = filtered_df[filtered_df['Section'] == row['Section']]
                 st.dataframe(subset_df)
-
-    st.markdown("### 🧾 Evaluation Table")
-    st.dataframe(filtered_df, use_container_width=True, height=400)
+st.markdown("### 🧾 Evaluation Table")
+st.dataframe(filtered_df, use_container_width=True, height=400)
 
 # === Tab 2: Scores & Trends ===
 with tabs[1]:
