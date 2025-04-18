@@ -64,30 +64,18 @@ with tabs[0]:
     }).reset_index()
 
     for (strategy, tag), group in grouped.groupby(["Strategy", "Prompt Tag"]):
-        html_block = f"""
-        <div style="display: flex; align-items: center; margin-top: 20px; margin-bottom: 10px;">
-            <div style="font-size: 20px; margin-right: 10px;">🎯 <span style='color: #000;'>Strategy:</span></div>
-            <div style='
-                background-color: #7f9cf5;
-                color: white;
-                padding: 4px 12px;
-                border-radius: 6px;
-                font-weight: bold;
-                font-family: Courier New, monospace;
-            '>{strategy}</div>
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; margin-top: 20px; margin-bottom: 10px;">
+                <div style="font-size: 20px; margin-right: 10px;">🎯 <span style='color: #000;'>Strategy:</span></div>
+                <div style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px; font-weight: bold; font-family: 'Courier New', monospace;">{strategy}</div>
 
-            <div style="font-size: 20px; margin-left: 30px; margin-right: 10px;">🏷️ <span style='color: #000;'>Prompt Tag:</span></div>
-            <div style='
-                background-color: #f78fb3;
-                color: white;
-                padding: 4px 12px;
-                border-radius: 6px;
-                font-weight: bold;
-                font-family: Courier New, monospace;
-            '>{tag}</div>
-        </div>
-        """
-        st.markdown(html_block, unsafe_allow_html=True)
+                <div style="font-size: 20px; margin-left: 30px; margin-right: 10px;">🏷️ <span style='color: #000;'>Prompt Tag:</span></div>
+                <div style="background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px; font-weight: bold; font-family: 'Courier New', monospace;">{tag}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         group['Section'] = pd.Categorical(group['Section'], categories=ordered_sections, ordered=True)
         group = group.sort_values("Section")
@@ -96,20 +84,23 @@ with tabs[0]:
             expander_id = f"expand_{strategy}_{tag}_{row['Section']}"
             with st.container():
                 expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
-                st.markdown(f'''
-                <div style='
-                    border-radius: 12px;
-                    padding: 16px;
-                    background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
-                    margin-bottom: 16px;
-                    color: #fff;
-                    font-family: "Segoe UI", sans-serif;
-                '>
-                    <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
-                    <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
-                    <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
-                </div>
-                ''', unsafe_allow_html=True)
+                st.markdown(
+                    f"""
+                    <div style='
+                        border-radius: 12px;
+                        padding: 16px;
+                        background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                        margin-bottom: 16px;
+                        color: #fff;
+                        font-family: "Segoe UI", sans-serif;
+                    '>
+                        <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
+                        <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+                        <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
                 if expand:
                     st.markdown(f"#### 📘 Full LLM Output for `{row['Section']}`")
