@@ -141,7 +141,7 @@ with tabs[3]:
     st.markdown("## 🤖 Multi-Agent System (Preview)")
     st.info("This section will contain agent logs, recommendations, and real-time chaining.")
     st.markdown("**Planned agents:**")
-   st.markdown("- Feature Ideator")
+    st.markdown("- Feature Ideator")
     st.markdown("- Roadmap Generator")
     st.markdown("- OKR Builder")
     st.markdown("- Competitive Analyst")
