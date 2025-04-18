@@ -102,7 +102,9 @@ with tabs[0]:
                     #### 📘 Full LLM Output for <span style='color:#7f9cf5; font-weight:bold;'>{row['Section']}</span>
                     """, unsafe_allow_html=True)
                     st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
-                    st.markdown(f"#### 📋 All Entries for `{row['Section']}`")
+                    st.markdown(f"""
+                    #### 📋 All Entries for <span style='color:#7f9cf5; font-weight:bold;'>{row['Section']}</span>
+                    """, unsafe_allow_html=True)
                     subset_df = filtered_df[
                         (filtered_df['Strategy'] == strategy) &
                         (filtered_df['Prompt Tag'] == tag) &
