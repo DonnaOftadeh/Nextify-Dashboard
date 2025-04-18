@@ -118,3 +118,38 @@ with tabs[4]:
     uploaded_file = st.file_uploader("Upload Document (PDF, TXT)", type=["pdf", "txt"])
     if uploaded_file:
         st.success(f"Uploaded {uploaded_file.name}. Embedding + RAG view coming soon.")
+    st.markdown("### 🧠 Prompt Evaluation Cards")
+    section_cards = filtered_df.groupby("Section").agg({
+        "LLM Score": "mean",
+        "Human Score": "mean",
+        "Feedback": lambda x: x.iloc[0] if not x.empty else "",
+        "LLM Output Section": lambda x: x.iloc[0] if not x.empty else "",
+        "Prompt Tag": lambda x: x.iloc[0] if not x.empty else ""
+    }).reset_index()
+
+    for idx, row in section_cards.iterrows():
+        expander_id = f"expand_{idx}"
+        with st.container():
+            expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
+            st.markdown(f"""
+            <div style='
+                border-radius: 12px;
+                padding: 16px;
+                background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                margin-bottom: 16px;
+                color: #fff;
+                font-family: "Segoe UI", sans-serif;
+            '>
+                <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
+                <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+                <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if expand:
+                st.markdown(f"**Prompt Tag:** `{row['Prompt Tag']}`")
+                st.markdown("**LLM Output Section:**")
+                st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
+                st.markdown("---")
+
+
