@@ -313,53 +313,52 @@ with tabs[3]:
             "name": "🧠 Feature Ideator",
             "summary": "Synthesizes market trends, competitor insights, and user feedback to generate actionable feature ideas.",
             "description": """The Feature Ideator collaborates with:
-- 📊 Competitor & Market Agent for trends and rival positioning
-- ❤️ Customer Feedback Agent for needs and complaints
-- 😠 Sentiment Agent for emotion-weighted prioritization
-- 🧪 Breakthrough Watcher Agent for industry innovation
+- 📊 Competitor & Market Agent for trends and rival positioning  
+- ❤️ Customer Feedback Agent for needs and complaints  
+- 😠 Sentiment Agent for emotion-weighted prioritization  
+- 🧪 Breakthrough Watcher Agent for industry innovation  
 It produces multiple feature concepts with rationales, ready for prioritization."""
         },
         {
             "name": "🎯 Roadmap & OKR Generator",
             "summary": "Turns validated feature proposals into strategic OKRs and a milestone-driven roadmap.",
             "description": """This agent maps each selected feature to:
-- 🧭 Company mission/vision
-- 📅 Quarterly delivery goals
-- 📐 Measurable OKRs
-
+- 🧭 Company mission/vision  
+- 📅 Quarterly delivery goals  
+- 📐 Measurable OKRs  
 It also requests input from Decision Agent to resolve priority conflicts."""
         },
         {
             "name": "📈 Competitor & Market Agent",
             "summary": "Monitors product updates, pricing, and news using RAG + Search grounding.",
             "description": """This agent uses Google Search and document RAG pipelines to:
-- 📰 Scrape competitor blogs, changelogs, and reviews
-- 📉 Compare positioning and growth metrics
+- 📰 Scrape competitor blogs, changelogs, and reviews  
+- 📉 Compare positioning and growth metrics  
 - 🧠 Feed summaries to Feature Ideator and Decision Maker"""
         },
         {
             "name": "💬 Customer Feedback & Sentiment Agent",
             "summary": "Clusters and scores user feedback for topic modeling and emotional tone.",
             "description": """Using embedding-based clustering and Google NLP sentiment scoring:
-- 📂 Segments complaints, suggestions, praises
-- 🎭 Detects urgency and emotion
+- 📂 Segments complaints, suggestions, praises  
+- 🎭 Detects urgency and emotion  
 - 📩 Feeds tagged feedback into Feature Ideator"""
         },
         {
             "name": "📊 Decision Maker",
             "summary": "Orchestrates and ranks agent outputs to recommend what to build next.",
             "description": """Applies weighted scoring to features:
-- 📌 Alignment with strategy (via roadmap)
-- 💰 Business impact (from OKRs)
-- ❤️ Customer value (from feedback agent)
+- 📌 Alignment with strategy (via roadmap)  
+- 💰 Business impact (from OKRs)  
+- ❤️ Customer value (from feedback agent)  
 - 🥇 Picks top features for inclusion"""
         },
         {
             "name": "🌍 Breakthrough Watcher",
             "summary": "Scans for game-changing technologies and startup launches in the domain.",
             "description": """Acts as an explorer bot, ingesting:
-- 🚀 TechCrunch, HackerNews, arXiv, VentureBeat
-- 📈 Signals of disruption
+- 🚀 TechCrunch, HackerNews, arXiv, VentureBeat  
+- 📈 Signals of disruption  
 Notifies Feature Ideator if relevance detected."""
         }
     ]
@@ -385,7 +384,16 @@ Notifies Feature Ideator if relevance detected."""
         ''', unsafe_allow_html=True)
 
         if expand:
-            st.markdown(f"#### 📘 Full Description for `{agent['name']}`")
+            st.markdown(f"""
+            <h4 style='margin-top: 30px;'>
+            📘 <span style="font-weight: 600;">Full Description for</span>
+            <span style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+            font-family: Courier New, monospace; font-weight: bold;">
+            {agent['name']}
+            </span>
+            </h4>
+            """, unsafe_allow_html=True)
+
             st.markdown(agent["description"])
 
     st.markdown("---")
