@@ -114,13 +114,19 @@ with tabs[0]:
 
     st.markdown("### 🧾 Evaluation Table")
     st.dataframe(filtered_df, use_container_width=True, height=400)
+    
 # === Tab 2: Scores & Trends ===
 with tabs[1]:
-    st.markdown("## 📊 Scores & Trends")
+    st.markdown("## 📊 <span style='color:#7f9cf5;'>Scores & Trends</span>", unsafe_allow_html=True)
 
     if not filtered_df.empty:
-        st.markdown(f"**Selected Prompt Tags:** {', '.join(filtered_df['Prompt Tag'].unique())}")
+        st.markdown(
+            f"<span style='font-size:16px;'><strong>🎯 Selected Prompt Tags:</strong> "
+            f"<span style='color:#f78fb3;'>{', '.join(filtered_df['Prompt Tag'].unique())}</span></span>",
+            unsafe_allow_html=True
+        )
 
+        # Heatmaps
         pivot_metric = filtered_df.pivot_table(
             values=["LLM Score", "Human Score"],
             index="Section",
@@ -128,20 +134,41 @@ with tabs[1]:
             aggfunc="mean"
         )
 
-        st.markdown("### 🔥 LLM Score Heatmap")
-        fig_llm = px.imshow(pivot_metric["LLM Score"].fillna(0), text_auto=True, color_continuous_scale="blues")
+        # === LLM Score Heatmap ===
+        st.markdown("### 🔥 <span style='color:#7f9cf5;'>LLM Score Heatmap</span>", unsafe_allow_html=True)
+        fig_llm = px.imshow(
+            pivot_metric["LLM Score"].fillna(0),
+            text_auto=True,
+            color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
+        )
+        fig_llm.update_layout(margin=dict(t=20, l=60, r=20, b=20))
         st.plotly_chart(fig_llm, use_container_width=True)
 
-        st.markdown("### 🧠 Human Score Heatmap")
-        fig_human = px.imshow(pivot_metric["Human Score"].fillna(0), text_auto=True, color_continuous_scale="greens")
+        # === Human Score Heatmap ===
+        st.markdown("### 🧠 <span style='color:#7f9cf5;'>Human Score Heatmap</span>", unsafe_allow_html=True)
+        fig_human = px.imshow(
+            pivot_metric["Human Score"].fillna(0),
+            text_auto=True,
+            color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
+        )
+        fig_human.update_layout(margin=dict(t=20, l=60, r=20, b=20))
         st.plotly_chart(fig_human, use_container_width=True)
 
-        st.markdown("### 📊 Combined Score by Section (LLM + Human Average)")
+        # === Combined Score Bar Chart ===
+        st.markdown("### 📊 <span style='color:#7f9cf5;'>Combined Score by Section</span>", unsafe_allow_html=True)
         filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
         avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
-        fig_comb = px.bar(avg_combined, x="Section", y="Combined Score", color="Prompt Tag", barmode="group")
+        fig_comb = px.bar(
+            avg_combined,
+            x="Section",
+            y="Combined Score",
+            color="Prompt Tag",
+            color_discrete_sequence=["#b2f7ef", "#7f9cf5", "#f78fb3"]
+        )
+        fig_comb.update_layout(barmode="group", xaxis_title="Section", yaxis_title="Avg Combined Score")
         st.plotly_chart(fig_comb, use_container_width=True)
-        
+        st.plotly_chart(fig_comb, use_container_width=True)
+
 # === Tab 3: Prompt Table ===
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
