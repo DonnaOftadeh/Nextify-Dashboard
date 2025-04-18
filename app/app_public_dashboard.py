@@ -53,48 +53,53 @@ with tabs[0]:
     col3.metric("Average Human Score", f"{filtered_df['Human Score'].mean():.2f}" if not df.empty else "N/A")
 
     
+    
     st.markdown("### 🧠 Prompt Evaluation Cards")
 
     ordered_sections = filtered_df['Section'].dropna().unique().tolist()
-    section_cards = (
-        filtered_df.groupby("Section").agg({
-            "LLM Score": "mean",
-            "Human Score": "mean",
-            "Feedback": lambda x: x.iloc[0] if not x.empty else "",
-            "LLM Output Section": lambda x: x.iloc[0] if not x.empty else "",
-            "Prompt Tag": lambda x: x.iloc[0] if not x.empty else ""
-        }).reset_index()
-    )
+    grouped = filtered_df.groupby(["Strategy", "Prompt Tag", "Section"]).agg({
+        "LLM Score": "mean",
+        "Human Score": "mean",
+        "Feedback": lambda x: x.iloc[0],
+        "LLM Output Section": lambda x: x.iloc[0]
+    }).reset_index()
 
-    section_cards['Section'] = pd.Categorical(section_cards['Section'], categories=ordered_sections, ordered=True)
-    section_cards = section_cards.sort_values('Section')
+    for (strategy, tag), group in grouped.groupby(["Strategy", "Prompt Tag"]):
+        st.markdown(f"#### 🎯 Strategy: `{strategy}` | 🏷️ Prompt Tag: `{tag}`")
 
-    for idx, row in section_cards.iterrows():
-        expander_id = f"expand_{idx}_overview"
-        with st.container():
-            expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
-            st.markdown(f'''
-            <div style='
-                border-radius: 12px;
-                padding: 16px;
-                background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
-                margin-bottom: 16px;
-                color: #fff;
-                font-family: "Segoe UI", sans-serif;
-            '>
-                <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
-                <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
-                <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
-            </div>
-            ''', unsafe_allow_html=True)
+        group['Section'] = pd.Categorical(group['Section'], categories=ordered_sections, ordered=True)
+        group = group.sort_values("Section")
 
-            if expand:
-                st.markdown(f"#### 📘 Full LLM Output for `{row['Section']}`")
-                st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
+        for idx, row in group.iterrows():
+            expander_id = f"expand_{strategy}_{tag}_{row['Section']}"
+            with st.container():
+                expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
+                st.markdown(f'''
+                <div style='
+                    border-radius: 12px;
+                    padding: 16px;
+                    background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                    margin-bottom: 16px;
+                    color: #fff;
+                    font-family: "Segoe UI", sans-serif;
+                '>
+                    <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
+                    <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+                    <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+                </div>
+                ''', unsafe_allow_html=True)
 
-                st.markdown(f"#### 📋 All Entries for `{row['Section']}`")
-                subset_df = filtered_df[filtered_df['Section'] == row['Section']]
-                st.dataframe(subset_df)
+                if expand:
+                    st.markdown(f"#### 📘 Full LLM Output for `{row['Section']}`")
+                    st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
+
+                    st.markdown(f"#### 📋 All Entries for `{row['Section']}`")
+                    subset_df = filtered_df[
+                        (filtered_df['Strategy'] == strategy) &
+                        (filtered_df['Prompt Tag'] == tag) &
+                        (filtered_df['Section'] == row['Section'])
+                    ]
+                    st.dataframe(subset_df)
 st.markdown("### 🧾 Evaluation Table")
 st.dataframe(filtered_df, use_container_width=True, height=400)
 
