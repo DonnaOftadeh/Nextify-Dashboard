@@ -41,8 +41,6 @@ if strategies:
 if prompt_tags:
     filtered_df = filtered_df[filtered_df["Prompt Tag"].isin(prompt_tags)]
 
-# === Tabs ===
-tabs = st.tabs(["Overview", "Scores & Trends", "Prompt Table", "Multi-Agent System", "Embeddings & RAG"])
 
 # === Tabs ===
 tabs = st.tabs(["Overview", "Scores & Trends", "Prompt Table", "Multi-Agent System", "Embeddings & RAG"])
