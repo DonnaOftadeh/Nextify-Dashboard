@@ -256,64 +256,48 @@ with tabs[2]:
         group = group.sort_values("Section")
 
         for idx, row in group.iterrows():
-            toggle_key = f"tab3_expand_{strategy}_{tag}_{row['Section']}"
-            button_key = f"{toggle_key}_btn"
+            checkbox_id = f"prompt_card_{strategy}_{tag}_{row['Section']}"
+            expand = st.checkbox(f"⬇️ {row['Section']}", key=checkbox_id)
 
-            if toggle_key not in st.session_state:
-                st.session_state[toggle_key] = False
+            # Card always visible
+            st.markdown(f'''
+            <div style='
+                border-radius: 12px;
+                padding: 16px;
+                background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                margin-bottom: 12px;
+                color: white;
+                font-family: "Segoe UI", sans-serif;
+            '>
+                <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
+                <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+                <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+            </div>
+            ''', unsafe_allow_html=True)
 
-            clicked = st.button(f"⬇️ {row['Section']}", key=button_key)
-            if clicked:
-                st.session_state[toggle_key] = not st.session_state[toggle_key]
-
-            if st.session_state[toggle_key]:
-                # Styled prompt card like Overview tab
-                st.markdown(f'''
-                <div style='
-                    border-radius: 12px;
-                    padding: 16px;
-                    background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
-                    margin-bottom: 16px;
-                    color: white;
-                    font-family: "Segoe UI", sans-serif;
-                '>
-                    <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
-                    <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp;
-                       👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
-                    <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
-                </div>
-                ''', unsafe_allow_html=True)
-
-                # Full LLM Output Section (styled like prompt overview)
+            if expand:
+                # Expanded content
                 st.markdown(f"""
-                <h4 style='margin-top: 30px;'>
-                📘 <span style="font-weight: 600;">Full LLM Output for</span>
+                <h4 style='margin-top: 20px;'>📘 <span style="font-weight: 600;">Full LLM Output for</span>
                 <span style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
-                font-family: Courier New, monospace; font-weight: bold;">
-                {row['Section']}
-                </span>
-                </h4>
+                font-family: Courier New, monospace; font-weight: bold;">{row['Section']}</span></h4>
                 """, unsafe_allow_html=True)
 
                 st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
 
-                # Table of all entries
-                st.markdown(f"""
-                <h4 style='margin-top: 30px;'>
-                🗂️ <span style="font-weight: 600;">All Entries for</span>
-                <span style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
-                font-family: Courier New, monospace; font-weight: bold;">
-                {row['Section']}
-                </span>
-                </h4>
-                """, unsafe_allow_html=True)
-
+                # DataFrame below each card for traceability
                 subset_df = filtered_df[
                     (filtered_df['Strategy'] == strategy) &
                     (filtered_df['Prompt Tag'] == tag) &
                     (filtered_df['Section'] == row['Section'])
                 ]
-                st.dataframe(subset_df)
+                st.markdown(f"""
+                <h4 style='margin-top: 20px;'>🗂️ <span style="font-weight: 600;">All Entries for</span>
+                <span style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                font-family: Courier New, monospace; font-weight: bold;">{row['Section']}</span></h4>
+                """, unsafe_allow_html=True)
+
+                st.dataframe(subset_df, use_container_width=True)
 
 # === Tab 4: Multi-Agent System ===
 with tabs[3]:
