@@ -228,20 +228,63 @@ with tabs[1]:
 # === Tab 3: Prompt Table ===
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
-    selected_prompt = st.selectbox("Choose a Prompt Tag", df["Prompt Tag"].unique() if not df.empty else [])
-    if selected_prompt:
-        prompt_rows = df[df["Prompt Tag"] == selected_prompt]
-        for _, row in prompt_rows.iterrows():
-            with st.expander(f"🔹 {row['Section']}" if pd.notna(row['Section']) else "🔹 Section"):
-                st.markdown(f"**Metric**: {row['Metric']}")
-                st.markdown(f"**LLM Score**: {row['LLM Score']}")
-                st.markdown(f"**Human Score**: {row['Human Score']}")
-                st.markdown(f"**Feedback**: {row['Feedback']}")
-                st.markdown(f"**Lesson**: {row['Lesson']}")
-                st.markdown("---")
-                st.markdown("**LLM Output Section:**")
-                st.markdown(row["LLM Output Section"])
 
+    ordered_sections = filtered_df['Section'].dropna().unique().tolist()
+    grouped = filtered_df.groupby(["Strategy", "Prompt Tag", "Section"]).agg({
+        "LLM Score": "mean",
+        "Human Score": "mean",
+        "Feedback": lambda x: x.iloc[0],
+        "LLM Output Section": lambda x: x.iloc[0]
+    }).reset_index()
+
+    for (strategy, tag), group in grouped.groupby(["Strategy", "Prompt Tag"]):
+        # Strategy and Prompt Tag Header
+        st.markdown(f"""
+        <div style="margin-top: 20px; margin-bottom: 10px; text-align: left;">
+            <div style='font-size: 20px;'><strong>🎯 Strategy:</strong>
+                <span style='background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{strategy}</span>
+            </div>
+            <div style='font-size: 20px; margin-top: 10px;'><strong>🏷️ Prompt Tag:</strong>
+                <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{tag}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        group['Section'] = pd.Categorical(group['Section'], categories=ordered_sections, ordered=True)
+        group = group.sort_values("Section")
+
+        for idx, row in group.iterrows():
+            expander_id = f"prompt_tab_expand_{strategy}_{tag}_{row['Section']}"
+            with st.container():
+                expand = st.checkbox(f"⬇️ {row['Section']}", key=expander_id)
+                st.markdown(f'''
+                <div style='
+                    border-radius: 12px;
+                    padding: 16px;
+                    background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                    margin-bottom: 16px;
+                    color: #fff;
+                    font-family: "Segoe UI", sans-serif;
+                '>
+                    <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
+                    <p>🤖 LLM Score: <strong>{row['LLM Score']:.2f}</strong> &nbsp; | &nbsp; 👤 Human Score: <strong>{row['Human Score']:.2f}</strong></p>
+                    <p style='font-size: 0.9em;'><strong>Feedback:</strong> {row['Feedback'][:120]}...</p>
+                </div>
+                ''', unsafe_allow_html=True)
+
+                if expand:
+                    st.markdown(f"#### 📘 Full LLM Output for `{row['Section']}`")
+                    st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
+
+                    st.markdown(f"#### 📋 All Entries for `{row['Section']}`")
+                    subset_df = filtered_df[
+                        (filtered_df['Strategy'] == strategy) &
+                        (filtered_df['Prompt Tag'] == tag) &
+                        (filtered_df['Section'] == row['Section'])
+                    ]
+                    st.dataframe(subset_df)
 # === Tab 4: Multi-Agent (Preview) ===
 with tabs[3]:
     st.markdown("## 🤖 Multi-Agent System (Preview)")
