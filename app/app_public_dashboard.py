@@ -256,7 +256,6 @@ with tabs[2]:
         group = group.sort_values("Section")
 
         for idx, row in group.iterrows():
-            # unique state toggle
             toggle_key = f"tab3_expand_{strategy}_{tag}_{row['Section']}"
             button_key = f"{toggle_key}_btn"
 
@@ -268,14 +267,14 @@ with tabs[2]:
                 st.session_state[toggle_key] = not st.session_state[toggle_key]
 
             if st.session_state[toggle_key]:
-                # Styled prompt card
+                # Styled prompt card like Overview tab
                 st.markdown(f'''
                 <div style='
                     border-radius: 12px;
                     padding: 16px;
                     background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
                     margin-bottom: 16px;
-                    color: #fff;
+                    color: white;
                     font-family: "Segoe UI", sans-serif;
                 '>
                     <h4 style='margin-bottom: 8px;'>{row['Section']}</h4>
@@ -285,7 +284,7 @@ with tabs[2]:
                 </div>
                 ''', unsafe_allow_html=True)
 
-                # Full LLM Output Section (styled)
+                # Full LLM Output Section (styled like prompt overview)
                 st.markdown(f"""
                 <h4 style='margin-top: 30px;'>
                 📘 <span style="font-weight: 600;">Full LLM Output for</span>
@@ -315,7 +314,7 @@ with tabs[2]:
                     (filtered_df['Section'] == row['Section'])
                 ]
                 st.dataframe(subset_df)
-     
+
 # === Tab 4: Multi-Agent System ===
 with tabs[3]:
     st.markdown("## 🤖 Multi-Agent System (Preview)")
