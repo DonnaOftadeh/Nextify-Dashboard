@@ -275,10 +275,28 @@ with tabs[2]:
                 ''', unsafe_allow_html=True)
 
                 if expand:
-                    st.markdown(f"#### 📘 Full LLM Output for `{row['Section']}`")
+                    st.markdown(f"""
+                    <h4 style='margin-top: 30px;'>
+                    📘 <span style="font-weight: 600;">Full LLM Output for</span>
+                    <span style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                    font-family: Courier New, monospace; font-weight: bold;">
+                    {row['Section']}
+                    </span>
+                    </h4>
+                    """, unsafe_allow_html=True)
+
                     st.markdown(row["LLM Output Section"], unsafe_allow_html=True)
 
-                    st.markdown(f"#### 📋 All Entries for `{row['Section']}`")
+                    st.markdown(f"""
+                    <h4 style='margin-top: 30px;'>
+                    🗂️ <span style="font-weight: 600;">All Entries for</span>
+                    <span style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                    font-family: Courier New, monospace; font-weight: bold;">
+                    {row['Section']}
+                    </span>
+                    </h4>
+                    """, unsafe_allow_html=True)
+
                     subset_df = filtered_df[
                         (filtered_df['Strategy'] == strategy) &
                         (filtered_df['Prompt Tag'] == tag) &
