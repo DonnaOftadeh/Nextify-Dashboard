@@ -408,6 +408,10 @@ Notifies Feature Ideator if relevance detected."""
         <h4 style='margin: 0;'>🚧 More agents, live chaining & real-time orchestration coming soon!</h4>
     </div>
     ''', unsafe_allow_html=True)
+
+    st.markdown("### 🧾 Evaluation Table")
+    st.dataframe(filtered_df, use_container_width=True, height=400)
+    
 # === Tab 5: Embeddings & RAG (Future) ===
 with tabs[4]:
     st.markdown("## 🧠 Embeddings + Retrieval Augmented Generation")
