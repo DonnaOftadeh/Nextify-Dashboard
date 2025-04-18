@@ -141,10 +141,11 @@ with tabs[3]:
     st.markdown("## 🤖 Multi-Agent System (Preview)")
     st.info("This section will contain agent logs, recommendations, and real-time chaining.")
     st.markdown("**Planned agents:**")
-    st.markdown("- Feature Ideator
-- Roadmap Generator
-- OKR Builder
-- Competitive Analyst")
+   st.markdown("- Feature Ideator")
+    st.markdown("- Roadmap Generator")
+    st.markdown("- OKR Builder")
+    st.markdown("- Competitive Analyst")
+
     st.markdown("**Coming soon: Upload documents, run retrieval, view multi-agent flow.**")
 
 # === Tab 5: Embeddings & RAG (Future) ===
