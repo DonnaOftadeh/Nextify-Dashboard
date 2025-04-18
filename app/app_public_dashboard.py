@@ -298,8 +298,9 @@ with tabs[2]:
                 """, unsafe_allow_html=True)
 
                 st.dataframe(subset_df, use_container_width=True)
-                st.markdown("### 🧾 Evaluation Table")
-                st.dataframe(filtered_df, use_container_width=True, height=400)
+                
+    st.markdown("### 🧾 Evaluation Table")
+    st.dataframe(filtered_df, use_container_width=True, height=400)
 
 # === Tab 4: Multi-Agent System ===
 with tabs[3]:
