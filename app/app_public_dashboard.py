@@ -303,17 +303,84 @@ with tabs[2]:
                         (filtered_df['Section'] == row['Section'])
                     ]
                     st.dataframe(subset_df)
-# === Tab 4: Multi-Agent (Preview) ===
+                    
+# === Tab 4: Multi-Agent System ===
 with tabs[3]:
-    st.markdown("## 🤖 Multi-Agent System (Preview)")
-    st.info("This section will contain agent logs, recommendations, and real-time chaining.")
-    st.markdown("**Planned agents:**")
-    st.markdown("- Feature Ideator")
-    st.markdown("- Roadmap Generator")
-    st.markdown("- OKR Builder")
-    st.markdown("- Competitive Analyst")
+    st.markdown("## 🤖 Multi-Agent System")
 
-    st.markdown("**Coming soon: Upload documents, run retrieval, view multi-agent flow.**")
+    st.markdown("This page shows the agents designed to automate different parts of the PM workflow using Generative AI.")
+    
+    st.image("data/agentic_workflow_diagram.png", caption="🔄 Agentic Workflow: Nextify System Design", use_column_width=True)
+
+    agents = [
+        {
+            "name": "Competitor & Market Analyst",
+            "brief": "Monitors competitor moves and market signals using search + grounding.",
+            "full": "This agent scans public sources like Google Search, TrustPilot, and app reviews to track product launches, pricing changes, customer sentiment, and positioning of competitors. It summarizes threats and opportunities."
+        },
+        {
+            "name": "Customer Feedback Synthesizer",
+            "brief": "Summarizes NPS, app reviews, and support tickets into clear insights.",
+            "full": "This agent classifies user feedback into feature requests, complaints, and sentiments using embeddings and LLM-based summarization. It flags top pain points and common themes."
+        },
+        {
+            "name": "Sentiment & Emotion Detector",
+            "brief": "Detects emotional tones in feedback using fine-tuned models.",
+            "full": "With a fine-tuned sentiment classifier, this agent can detect not just polarity but also emotions like frustration, delight, confusion, etc., to inform roadmap prioritization and design tweaks."
+        },
+        {
+            "name": "Feature Ideation Engine",
+            "brief": "Generates innovative feature ideas based on pain points, market gaps, and vision.",
+            "full": "This agent uses LLM prompting with RAG to generate context-aware feature suggestions aligned to product vision and OKRs. It cross-checks with competitor gaps for strategic differentiation."
+        },
+        {
+            "name": "Roadmap & OKR Builder",
+            "brief": "Builds a quarterly roadmap and aligns each item to OKRs.",
+            "full": "It turns features into roadmap cards with effort/impact tags, estimates priority using ICE scoring or OKR alignment, and formats the output as a structured JSON roadmap."
+        },
+        {
+            "name": "Decision-making Assistant",
+            "brief": "Prioritizes roadmap items using ICE, RICE, or custom scoring strategies.",
+            "full": "Using OKR weighting and contextual scoring, this agent ranks options and can simulate trade-offs. It also includes a ‘risk check’ to validate if the suggestion violates any product principles or constraints."
+        }
+    ]
+
+    for i, agent in enumerate(agents):
+        expander_id = f"agent_expander_{i}"
+        with st.container():
+            expand = st.checkbox(f"⬇️ {agent['name']}", key=expander_id)
+            st.markdown(f"""
+            <div style='
+                border-radius: 12px;
+                padding: 16px;
+                background: linear-gradient(to right, #b2f7ef, #7f9cf5, #f78fb3);
+                margin-bottom: 16px;
+                color: #fff;
+                font-family: "Segoe UI", sans-serif;
+            '>
+                <h4 style='margin-bottom: 8px;'>{agent['name']}</h4>
+                <p style='font-size: 0.9em;'><strong>🧠 What it does:</strong> {agent['brief']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if expand:
+                st.markdown(f"#### 📘 Full Description of `{agent['name']}`")
+                st.markdown(agent['full'])
+
+    # Coming soon section
+    st.markdown("""
+    <div style='
+        margin-top: 30px;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        border-left: 5px solid #f78fb3;
+        background-color: #fff3f8;
+        color: #7f9cf5;
+    '>
+        🚧 More agents and chaining logic coming soon!
+    </div>
+    """, unsafe_allow_html=True)
 
 # === Tab 5: Embeddings & RAG (Future) ===
 with tabs[4]:
