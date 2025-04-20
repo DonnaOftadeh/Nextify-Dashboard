@@ -199,11 +199,15 @@ with tabs[1]:
         )
         st.plotly_chart(fig_comb, use_container_width=False)
 
-        # 📋 Table
+        # 📋 Combined Score Table
         st.markdown("---")
         st.markdown("### 📋 Combined Score Table", unsafe_allow_html=True)
         st.dataframe(avg_combined, use_container_width=True, height=350)
 
+        # 📂 Full Dataset Table
+        st.markdown("---")
+        st.markdown("### 📂 Full Dataset (Filtered)", unsafe_allow_html=True)
+        st.dataframe(filtered_df.reset_index(drop=True), use_container_width=True, height=500)
 # === Tab 3: Prompt Table ===
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
