@@ -124,7 +124,7 @@ with tabs[1]:
         selected_strategy = ", ".join(filtered_df['Strategy'].unique())
         selected_tags = ", ".join(filtered_df['Prompt Tag'].unique())
 
-        # 🎨 Define your harmonious pastel color palette and assign color to each prompt tag
+        # 🎨 Harmonious pastel palette + color map
         import itertools
 
         harmonious_palette = [
@@ -136,7 +136,7 @@ with tabs[1]:
         color_cycle = itertools.cycle(harmonious_palette)
         color_map = {tag: color for tag, color in zip(prompt_tags, color_cycle)}
 
-        # 🎯 Strategy & Prompt Tag Header
+        # 🎯 Strategy & Prompt Tag Header (match Tab 1)
         st.markdown(f"""
         <div style='margin-top: 10px; margin-bottom: 10px; font-size: 18px; text-align: left;'>
             <div>
@@ -145,24 +145,24 @@ with tabs[1]:
                             font-family: Courier New, monospace; font-weight: bold;'>{selected_strategy}</span>
             </div>
             <div style="margin-top: 10px;">
-                🏷️ <strong>Prompt Tags:</strong><br>
-                <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
-                            font-family: Courier New, monospace; font-weight: bold;'>{selected_tags}</span>
+                🏷️ <strong>Prompt Tags:</strong>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # 🎨 Prompt Tag Legend
-        st.markdown("### 🎨 <span style='color:#7f9cf5;'>Prompt Tag Colors</span>", unsafe_allow_html=True)
-        legend_html = "<div style='display: flex; flex-wrap: wrap; gap: 12px;'>"
+        # 🏷️ Prompt Tag Cards (styled like Tab 1)
+        tag_card_html = """
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; margin-bottom: 20px;">
+        """
         for tag in prompt_tags:
-            text_color = "black" if color_map[tag].lower() in ["#b2f7ef", "#d0f4de", "#fcd5ce", "#e2f0cb", "#fde2e4", "#bee1e6"] else "white"
-            legend_html += f"""
-            <div style="background-color: {color_map[tag]}; color: {text_color}; padding: 4px 12px; border-radius: 6px;
+            bg = color_map[tag]
+            text_color = "black" if bg.lower() in ["#b2f7ef", "#d0f4de", "#fcd5ce", "#e2f0cb", "#fde2e4", "#bee1e6"] else "white"
+            tag_card_html += f"""
+            <div style="background-color: {bg}; color: {text_color}; padding: 4px 12px; border-radius: 6px;
                         font-weight: bold; font-family: Courier New, monospace;">{tag}</div>
             """
-        legend_html += "</div>"
-        st.markdown(legend_html, unsafe_allow_html=True)
+        tag_card_html += "</div>"
+        st.markdown(tag_card_html, unsafe_allow_html=True)
 
         # 📊 Data Preparation
         filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
