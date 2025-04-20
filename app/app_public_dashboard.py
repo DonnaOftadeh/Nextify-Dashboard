@@ -118,6 +118,7 @@ with tabs[0]:
     st.dataframe(filtered_df, use_container_width=True, height=400)
     
 # === Tab 2: Scores & Trends ===
+# === Tab 2: Scores & Trends ===
 with tabs[1]:
     st.markdown("## 📊 Scores & Trends", unsafe_allow_html=True)
 
@@ -185,11 +186,11 @@ with tabs[1]:
         st.markdown("---")
         st.markdown("<h4 style='color: #7f9cf5;'>📊 Combined Score by Section</h4>", unsafe_allow_html=True)
 
-        sections = avg_combined["Section"].unique().tolist()
+        sections = sorted(avg_combined["Section"].unique())
         fig = go.Figure()
 
         for tag in prompt_tags:
-            tag_data = avg_combined[avg_combined["Prompt Tag"] == tag]
+            tag_data = avg_combined[avg_combined["Prompt Tag"] == tag].set_index("Section").reindex(sections).reset_index()
             x_vals = tag_data["Section"].tolist()
             y_vals = tag_data["Combined Score"].tolist()
             fig.add_bar(
