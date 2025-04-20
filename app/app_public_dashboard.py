@@ -132,69 +132,28 @@ with tabs[1]:
         color_cycle = itertools.cycle(harmonious_palette)
         color_map = {tag: color for tag, color in zip(prompt_tags, color_cycle)}
 
-        # Group by Strategy and Prompt Tag
-        grouped = filtered_df.groupby(["Strategy", "Prompt Tag"])
+        selected_strategy = ", ".join(filtered_df['Strategy'].unique())
+        selected_tags = ", ".join(filtered_df['Prompt Tag'].unique())
 
-        for (strategy, tag), group_df in grouped:
-            # 🎯 Strategy + Prompt Tag header cards (styled like Tab 1 & 3)
-            st.markdown(f"""
-            <div style="display: flex; align-items: center; margin-top: 30px; margin-bottom: 20px;">
-                <div style="font-size: 20px; margin-right: 10px;">🎯 <span style='color: #000;'>Strategy:</span></div>
-                <div style="background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
-                            font-weight: bold; font-family: Courier New, monospace;">{strategy}</div>
-                <div style="font-size: 20px; margin-left: 30px; margin-right: 10px;">🏷️ <span style='color: #000;'>Prompt Tag:</span></div>
-                <div style="background-color: {color_map.get(tag, '#cccccc')}; color: white; padding: 4px 12px; border-radius: 6px;
-                            font-weight: bold; font-family: Courier New, monospace;">{tag}</div>
+        # 🎯 Header block
+        st.markdown(f"""
+        <div style='margin-top: 10px; margin-bottom: 10px; font-size: 18px; text-align: left;'>
+            <div>
+                🎯 <strong>Strategy:</strong><br>
+                <span style='background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{selected_strategy}</span>
             </div>
-            """, unsafe_allow_html=True)
+            <div style="margin-top: 10px;">
+                🏷️ <strong>Prompt Tags:</strong><br>
+                <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{selected_tags}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-            # 🧮 Combined Score
-            group_df["Combined Score"] = group_df[["LLM Score", "Human Score"]].mean(axis=1)
-            avg_combined = group_df.groupby("Section")["Combined Score"].mean().reset_index()
-
-            # 🔥 LLM Score Heatmap
-            pivot_llm = group_df.pivot_table(values="LLM Score", index="Section", aggfunc="mean").fillna(0)
-            st.markdown("<h4 style='color: #7f9cf5;'>🔥 LLM Score Heatmap</h4>", unsafe_allow_html=True)
-            fig_llm = px.imshow(
-                pivot_llm,
-                text_auto=True,
-                color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
-            )
-            fig_llm.update_layout(width=850, height=400)
-            st.plotly_chart(fig_llm, use_container_width=True)
-
-            # 🧠 Human Score Heatmap
-            pivot_human = group_df.pivot_table(values="Human Score", index="Section", aggfunc="mean").fillna(0)
-            st.markdown("<h4 style='color: #7f9cf5;'>🧠 Human Score Heatmap</h4>", unsafe_allow_html=True)
-            fig_human = px.imshow(
-                pivot_human,
-                text_auto=True,
-                color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
-            )
-            fig_human.update_layout(width=850, height=400)
-            st.plotly_chart(fig_human, use_container_width=True)
-
-            # 📊 Combined Score Bar Chart
-            st.markdown("<h4 style='color: #7f9cf5;'>📊 Combined Score by Section</h4>", unsafe_allow_html=True)
-            fig_comb = px.bar(
-                avg_combined,
-                x="Section",
-                y="Combined Score",
-                color_discrete_sequence=[color_map.get(tag, "#7f9cf5")]
-            )
-            fig_comb.update_layout(
-                barmode="group",
-                width=850,
-                height=400,
-                margin=dict(t=20, l=20, r=20, b=20),
-                xaxis_title="Section",
-                yaxis_title="Combined Score"
-            )
-            st.plotly_chart(fig_comb, use_container_width=True)
-
-            # 📋 Raw Data Table
-            st.markdown("### 📋 Raw Entries")
-            st.dataframe(group_df.reset_index(drop=True), use_container_width=True, height=300)
+        # 📊 Data Preparation
+        filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
+        avg_combined = filtered_df.groupby(["Section
 
 # === Tab 3: Prompt Table ===
 with tabs[2]:
