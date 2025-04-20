@@ -153,7 +153,56 @@ with tabs[1]:
 
         # 📊 Data Preparation
         filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
-        avg_combined = filtered_df.groupby(["Section
+        avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
+        pivot_llm = filtered_df.pivot_table(values="LLM Score", index="Section", columns="Prompt Tag", aggfunc="mean").fillna(0)
+        pivot_human = filtered_df.pivot_table(values="Human Score", index="Section", columns="Prompt Tag", aggfunc="mean").fillna(0)
+
+        # 🔥 LLM Score Heatmap
+        st.markdown("---")
+        st.markdown("<h4 style='color: #7f9cf5;'>🔥 LLM Score Heatmap</h4>", unsafe_allow_html=True)
+        fig_llm = px.imshow(
+            pivot_llm,
+            text_auto=True,
+            color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
+        )
+        fig_llm.update_layout(width=900, height=500)
+        st.plotly_chart(fig_llm, use_container_width=False)
+
+        # 🧠 Human Score Heatmap
+        st.markdown("---")
+        st.markdown("<h4 style='color: #7f9cf5;'>🧠 Human Score Heatmap</h4>", unsafe_allow_html=True)
+        fig_human = px.imshow(
+            pivot_human,
+            text_auto=True,
+            color_continuous_scale=["#b2f7ef", "#7f9cf5", "#f78fb3"]
+        )
+        fig_human.update_layout(width=900, height=500)
+        st.plotly_chart(fig_human, use_container_width=False)
+
+        # 📊 Combined Score Bar Chart
+        st.markdown("---")
+        st.markdown("<h4 style='color: #7f9cf5;'>📊 Combined Score by Section</h4>", unsafe_allow_html=True)
+        fig_comb = px.bar(
+            avg_combined,
+            x="Section",
+            y="Combined Score",
+            color="Prompt Tag",
+            color_discrete_map=color_map
+        )
+        fig_comb.update_layout(
+            barmode="group",
+            width=900,
+            height=500,
+            legend_title_text="Prompt Tag",
+            xaxis_title="Section",
+            yaxis_title="Combined Score"
+        )
+        st.plotly_chart(fig_comb, use_container_width=False)
+
+        # 📋 Table
+        st.markdown("---")
+        st.markdown("### 📋 Combined Score Table", unsafe_allow_html=True)
+        st.dataframe(avg_combined, use_container_width=True, height=350)
 
 # === Tab 3: Prompt Table ===
 with tabs[2]:
