@@ -7,6 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import itertools
+import plotly.graph_objects as go
 
 # === Config ===
 st.set_page_config(
@@ -117,12 +118,11 @@ with tabs[0]:
     st.dataframe(filtered_df, use_container_width=True, height=400)
     
 # === Tab 2: Scores & Trends ===
+# === Tab 2: Scores & Trends ===
 with tabs[1]:
     st.markdown("## 📊 Scores & Trends", unsafe_allow_html=True)
 
     if not filtered_df.empty:
-        import itertools
-
         # 🎨 Harmonious pastel palette and color map
         harmonious_palette = [
             "#b2f7ef", "#7f9cf5", "#f78fb3", "#ffc8dd", "#cdb4db", "#a2d2ff",
@@ -179,25 +179,35 @@ with tabs[1]:
         fig_human.update_layout(width=900, height=500)
         st.plotly_chart(fig_human, use_container_width=False)
 
-        # 📊 Combined Score Bar Chart
+        # 📊 Combined Score Bar Chart (grouped and aligned)
         st.markdown("---")
         st.markdown("<h4 style='color: #7f9cf5;'>📊 Combined Score by Section</h4>", unsafe_allow_html=True)
-        fig_comb = px.bar(
-            avg_combined,
-            x="Section",
-            y="Combined Score",
-            color="Prompt Tag",
-            color_discrete_map=color_map
-        )
-        fig_comb.update_layout(
-            barmode="group",
+
+        sections = avg_combined["Section"].unique().tolist()
+        fig = go.Figure()
+
+        for tag in prompt_tags:
+            tag_data = avg_combined[avg_combined["Prompt Tag"] == tag]
+            y_values = [tag_data[tag_data["Section"] == sec]["Combined Score"].values[0] if sec in tag_data["Section"].values else None for sec in sections]
+            fig.add_bar(
+                x=sections,
+                y=y_values,
+                name=tag,
+                marker_color=color_map.get(tag, "#ccc")
+            )
+
+        fig.update_layout(
+            barmode='group',
             width=900,
             height=500,
-            legend_title_text="Prompt Tag",
+            title_text="📊 Combined Score by Section",
             xaxis_title="Section",
-            yaxis_title="Combined Score"
+            yaxis_title="Combined Score",
+            legend_title="Prompt Tag",
+            xaxis_tickangle=-45,
+            margin=dict(t=50, b=150)
         )
-        st.plotly_chart(fig_comb, use_container_width=False)
+        st.plotly_chart(fig, use_container_width=False)
 
         # 📋 Combined Score Table
         st.markdown("---")
@@ -208,6 +218,7 @@ with tabs[1]:
         st.markdown("---")
         st.markdown("### 📂 Full Dataset (Filtered)", unsafe_allow_html=True)
         st.dataframe(filtered_df.reset_index(drop=True), use_container_width=True, height=500)
+
 # === Tab 3: Prompt Table ===
 with tabs[2]:
     st.markdown("## 📋 Full Prompt Evaluation")
