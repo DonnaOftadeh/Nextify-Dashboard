@@ -118,11 +118,13 @@ with tabs[0]:
     st.dataframe(filtered_df, use_container_width=True, height=400)
     
 # === Tab 2: Scores & Trends ===
-# === Tab 2: Scores & Trends ===
 with tabs[1]:
     st.markdown("## 📊 Scores & Trends", unsafe_allow_html=True)
 
     if not filtered_df.empty:
+        import itertools
+        import plotly.graph_objects as go
+
         # 🎨 Harmonious pastel palette and color map
         harmonious_palette = [
             "#b2f7ef", "#7f9cf5", "#f78fb3", "#ffc8dd", "#cdb4db", "#a2d2ff",
@@ -188,10 +190,11 @@ with tabs[1]:
 
         for tag in prompt_tags:
             tag_data = avg_combined[avg_combined["Prompt Tag"] == tag]
-            y_values = [tag_data[tag_data["Section"] == sec]["Combined Score"].values[0] if sec in tag_data["Section"].values else None for sec in sections]
+            x_vals = tag_data["Section"].tolist()
+            y_vals = tag_data["Combined Score"].tolist()
             fig.add_bar(
-                x=sections,
-                y=y_values,
+                x=x_vals,
+                y=y_vals,
                 name=tag,
                 marker_color=color_map.get(tag, "#ccc")
             )
@@ -205,7 +208,8 @@ with tabs[1]:
             yaxis_title="Combined Score",
             legend_title="Prompt Tag",
             xaxis_tickangle=-45,
-            margin=dict(t=50, b=150)
+            margin=dict(t=50, b=150),
+            xaxis=dict(type='category')
         )
         st.plotly_chart(fig, use_container_width=False)
 
@@ -218,6 +222,7 @@ with tabs[1]:
         st.markdown("---")
         st.markdown("### 📂 Full Dataset (Filtered)", unsafe_allow_html=True)
         st.dataframe(filtered_df.reset_index(drop=True), use_container_width=True, height=500)
+
 
 # === Tab 3: Prompt Table ===
 with tabs[2]:
