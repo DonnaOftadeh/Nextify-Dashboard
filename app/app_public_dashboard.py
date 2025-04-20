@@ -124,47 +124,49 @@ with tabs[1]:
         selected_strategy = ", ".join(filtered_df['Strategy'].unique())
         selected_tags = ", ".join(filtered_df['Prompt Tag'].unique())
 
-        # 🎯 Strategy & Tags Header
-        st.markdown(f"""
-            <div style='margin-top: 10px; margin-bottom: 10px; font-size: 18px; text-align: left;'>
-                <div>
-                    🎯 <strong>Strategy:</strong><br>
-                    <span style='background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
-                                font-family: Courier New, monospace; font-weight: bold;'>{selected_strategy}</span>
-                </div>
-                <div style="margin-top: 10px;">
-                    🏷️ <strong>Prompt Tags:</strong><br>
-                    <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
-                                font-family: Courier New, monospace; font-weight: bold;'>{selected_tags}</span>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+        # 🎨 Define your harmonious pastel color palette and assign color to each prompt tag
+        import itertools
 
-        # Prepare Data
-        filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
-        avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
-
-        # 🎨 Color Map for Prompt Tags
-        prompt_tags = sorted(filtered_df["Prompt Tag"].dropna().unique())
-        color_palette = [
-            "#b2f7ef", "#7f9cf5", "#f78fb3", "#ffc107", "#4caf50",
-            "#ff9800", "#9c27b0", "#00bcd4", "#e91e63", "#8bc34a"
+        harmonious_palette = [
+            "#b2f7ef", "#7f9cf5", "#f78fb3", "#ffc8dd", "#cdb4db", "#a2d2ff",
+            "#d0f4de", "#fcd5ce", "#e2f0cb", "#fde2e4", "#bee1e6"
         ]
-        color_cycle = itertools.cycle(color_palette)
+
+        prompt_tags = sorted(filtered_df["Prompt Tag"].dropna().unique())
+        color_cycle = itertools.cycle(harmonious_palette)
         color_map = {tag: color for tag, color in zip(prompt_tags, color_cycle)}
 
-        # 📘 Color Legend
-        st.markdown("### 🎨 <span style='color:#7f9cf5;'>Prompt Tag Colors</span>", unsafe_allow_html=True)
-        color_legend_html = "<div style='display: flex; flex-wrap: wrap; gap: 10px;'>"
-        for tag in prompt_tags:
-            color_legend_html += f"""
-            <div style='background-color: {color_map[tag]}; padding: 4px 12px; border-radius: 6px;
-                         color: white; font-weight: bold; font-family: Courier New, monospace;'>{tag}</div>
-            """
-        color_legend_html += "</div>"
-        st.markdown(color_legend_html, unsafe_allow_html=True)
+        # 🎯 Strategy & Prompt Tag Header
+        st.markdown(f"""
+        <div style='margin-top: 10px; margin-bottom: 10px; font-size: 18px; text-align: left;'>
+            <div>
+                🎯 <strong>Strategy:</strong><br>
+                <span style='background-color: #7f9cf5; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{selected_strategy}</span>
+            </div>
+            <div style="margin-top: 10px;">
+                🏷️ <strong>Prompt Tags:</strong><br>
+                <span style='background-color: #f78fb3; color: white; padding: 4px 12px; border-radius: 6px;
+                            font-family: Courier New, monospace; font-weight: bold;'>{selected_tags}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # Heatmaps: Pivot for LLM & Human
+        # 🎨 Prompt Tag Legend
+        st.markdown("### 🎨 <span style='color:#7f9cf5;'>Prompt Tag Colors</span>", unsafe_allow_html=True)
+        legend_html = "<div style='display: flex; flex-wrap: wrap; gap: 12px;'>"
+        for tag in prompt_tags:
+            text_color = "black" if color_map[tag].lower() in ["#b2f7ef", "#d0f4de", "#fcd5ce", "#e2f0cb", "#fde2e4", "#bee1e6"] else "white"
+            legend_html += f"""
+            <div style="background-color: {color_map[tag]}; color: {text_color}; padding: 4px 12px; border-radius: 6px;
+                        font-weight: bold; font-family: Courier New, monospace;">{tag}</div>
+            """
+        legend_html += "</div>"
+        st.markdown(legend_html, unsafe_allow_html=True)
+
+        # 📊 Data Preparation
+        filtered_df["Combined Score"] = filtered_df[["LLM Score", "Human Score"]].mean(axis=1)
+        avg_combined = filtered_df.groupby(["Section", "Prompt Tag"])["Combined Score"].mean().reset_index()
         pivot_llm = filtered_df.pivot_table(values="LLM Score", index="Section", columns="Prompt Tag", aggfunc="mean").fillna(0)
         pivot_human = filtered_df.pivot_table(values="Human Score", index="Section", columns="Prompt Tag", aggfunc="mean").fillna(0)
 
@@ -183,7 +185,7 @@ with tabs[1]:
             xaxis_title="Prompt Tag",
             yaxis_title="Section"
         )
-        st.plotly_chart(fig_llm, use_container_width=False, key="llm_heatmap")
+        st.plotly_chart(fig_llm, use_container_width=False)
 
         # 🧠 Human Score Heatmap
         st.markdown("---")
@@ -200,7 +202,7 @@ with tabs[1]:
             xaxis_title="Prompt Tag",
             yaxis_title="Section"
         )
-        st.plotly_chart(fig_human, use_container_width=False, key="human_heatmap")
+        st.plotly_chart(fig_human, use_container_width=False)
 
         # 📊 Combined Score Bar Chart
         st.markdown("---")
@@ -221,9 +223,9 @@ with tabs[1]:
             legend_title_text="Prompt Tag",
             legend=dict(font=dict(size=12))
         )
-        st.plotly_chart(fig_comb, use_container_width=False, key="combined_chart")
+        st.plotly_chart(fig_comb, use_container_width=False)
 
-        # 📋 Table
+        # 📋 Combined Score Table
         st.markdown("---")
         st.markdown("### 📋 <span style='color:#7f9cf5;'>Combined Score Table</span>", unsafe_allow_html=True)
         st.dataframe(avg_combined, use_container_width=True, height=350)
