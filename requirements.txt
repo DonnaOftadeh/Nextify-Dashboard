@@ -4,7 +4,6 @@ plotly
 seaborn 
 matplotlib
 numpy
-streamlit
 pandas
 bs4
 google
