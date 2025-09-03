@@ -1,1 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Founder • I have an idea</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style> body{font-family:'Inter',sans-serif}.focusable:focus{outline:2px solid #2563eb;outline-offset:2px} </style>
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
+      <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-blue-600 focusable">Back</a>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">I have an idea</h1>
+    <p class="text-gray-600 mb-8">Describe your idea so the agents can validate the problem, users, and roadmap.</p>
+
+    <form id="ideaForm" class="bg-white rounded-2xl shadow p-6 space-y-5">
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Working title</label>
+        <input id="title" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., MindBridge AI" required>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-1">What problem are you solving?</label>
+        <textarea id="problem" class="w-full border rounded-xl px-4 py-3" rows="4" placeholder="Who has this problem and why it matters?" required></textarea>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-1">Target users</label>
+          <input id="users" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., Gen Z, therapists, SMBs">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-1">Regions / markets</label>
+          <input id="markets" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., India, MENA, US">
+        </div>
+      </div>
+
+      <button type="submit" class="focusable inline-flex items-center justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700">
+        Continue
+      </button>
+    </form>
+
+    <p class="text-xs text-gray-500 mt-4">We’ll pass your inputs to the Streamlit app as URL parameters (GET). The app will load the right multi-agent flow.</p>
+  </main>
+
+  <script>
+    document.getElementById('ideaForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const params = new URLSearchParams({
+        entry: 'idea',
+        title: document.getElementById('title').value,
+        problem: document.getElementById('problem').value,
+        users: document.getElementById('users').value,
+        markets: document.getElementById('markets').value
+      });
+      const url = 'https://nextify-dashboard-100.streamlit.app/?' + params.toString();
+      window.location.href = url;
+    });
+  </script>
+</body>
+</html>
 
