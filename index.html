@@ -95,11 +95,14 @@
 
           <!-- CTA group -->
           <div class="flex items-center space-x-3 lg:space-x-4">
-            <!-- Join Community (as button; same alert text behavior as original) -->
-            <button aria-label="Join Community"
-                    class="focusable bg-blue-600 text-white px-5 sm:px-6 md:px-7 lg:px-8 py-2.5 sm:py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md md:shadow-lg text-[13px] sm:text-sm md:text-base">
+            <!-- Join Community (redirects to roles.html) -->
+            <a aria-label="Join Community" href="roles.html"
+               class="focusable bg-blue-600 text-white px-5 sm:px-6 md:px-7 lg:px-8 
+                      py-2.5 sm:py-3 rounded-full font-semibold hover:bg-blue-700 
+                      transition-colors shadow-md md:shadow-lg 
+                      text-[13px] sm:text-sm md:text-base">
               Join Community
-            </button>
+            </a>
 
             <!-- Developer Console (link to Streamlit) -->
             <a aria-label="Open Developer Console" href="https://nextify-dashboard-100.streamlit.app/" target="_blank" rel="noopener"
@@ -118,11 +121,13 @@
           <a href="#how-it-works" class="text-gray-600 hover:text-blue-600 font-medium transition-colors px-4 py-2 focusable">How It Works</a>
           <a href="#pricing" class="text-gray-600 hover:text-blue-600 font-medium transition-colors px-4 py-2 focusable">Pricing</a>
           <div class="px-4 pt-1">
-            <!-- Join Community (button; same behavior) -->
-            <button aria-label="Join Community"
-                    class="focusable w-full bg-blue-600 text-white py-3.5 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-lg text-base">
-              Join Community
-            </button>
+          <!-- Join Community (mobile, full width) -->
+          <a aria-label="Join Community" href="roles.html"
+             class="focusable w-full bg-blue-600 text-white py-3.5 rounded-full 
+                    font-semibold hover:bg-blue-700 transition-colors 
+                    shadow-lg text-base">
+            Join Community
+          </a>
 
             <!-- Developer Console -->
             <a aria-label="Open Developer Console" href="https://nextify-dashboard-100.streamlit.app/" target="_blank" rel="noopener"
@@ -135,31 +140,33 @@
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="pt-20 md:pt-28 lg:pt-32 pb-12 md:pb-16 lg:pb-20 gradient-bg">
-    <div class="container-spacing">
-      <div class="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
-        <div class="space-y-6 md:space-y-8 text-center lg:text-left">
-          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
-            Innovation<br class="hidden sm:block">for Everyone,<br class="hidden sm:block"><span class="text-blue-200">Everywhere</span>
-          </h1>
-          <div class="space-y-4 md:space-y-6">
-            <p class="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              From a curious kid in Nigeria to a Silicon Valley founder to global investors—our AI ecosystem connects every innovator with the tools they need to succeed.
-            </p>
-            <p class="text-sm sm:text-base md:text-lg text-blue-200 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Transform any idea into a validated product. Connect with the right people. Build the future together.
-            </p>
-          </div>
-          <div class="flex flex-col sm:flex-row gap-4 md:gap-6 pt-2 md:pt-4 justify-center lg:justify-start">
-            <button class="focusable bg-white text-blue-600 px-6 sm:px-8 md:px-10 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-gray-50 transition-all shadow-xl">
-              Start Your Journey
-            </button>
-            <button class="focusable border-2 border-white text-white px-6 sm:px-8 md:px-10 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-white hover:text-blue-600 transition-all">
-              See How It Works
-            </button>
-          </div>
+ <!-- Hero Section -->
+<section class="pt-20 md:pt-28 lg:pt-32 pb-12 md:pb-16 lg:pb-20 gradient-bg">
+  <div class="container-spacing">
+    <div class="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
+      <div class="space-y-6 md:space-y-8 text-center lg:text-left">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
+          Innovation<br class="hidden sm:block">for Everyone,<br class="hidden sm:block"><span class="text-blue-200">Everywhere</span>
+        </h1>
+        <div class="space-y-4 md:space-y-6">
+          <p class="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            From a curious kid in Nigeria to a Silicon Valley founder to global investors—our AI ecosystem connects every innovator with the tools they need to succeed.
+          </p>
+          <p class="text-sm sm:text-base md:text-lg text-blue-200 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            Transform any idea into a validated product. Connect with the right people. Build the future together.
+          </p>
         </div>
+        <div class="flex flex-col sm:flex-row gap-4 md:gap-6 pt-2 md:pt-4 justify-center lg:justify-start">
+          <!-- CHANGED: button -> anchor linking to roles.html -->
+          <a href="roles.html"
+             class="focusable bg-white text-blue-600 px-6 sm:px-8 md:px-10 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-gray-50 transition-all shadow-xl">
+            Start Your Journey
+          </a>
+          <button class="focusable border-2 border-white text-white px-6 sm:px-8 md:px-10 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-white hover:text-blue-600 transition-all">
+            See How It Works
+          </button>
+        </div>
+      </div>
 
         <!-- Global Innovation Visualization -->
         <div class="float-animation mt-8 lg:mt-0">
