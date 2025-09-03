@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Founder • Build the next …</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style> body{font-family:'Inter',sans-serif}.focusable:focus{outline:2px solid #2563eb;outline-offset:2px} </style>
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
+      <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-blue-600 focusable">Back</a>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">I want to build the next…</h1>
+    <p class="text-gray-600 mb-8">Pick a benchmark company and we’ll adapt the model to your market.</p>
+
+    <form id="companyForm" class="bg-white rounded-2xl shadow p-6 space-y-5">
+      <div>
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Benchmark company</label>
+        <input id="name" type="text" class="w-full border rounded-xl px-4 py-3" value="Spotify" required>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-1">Target region</label>
+          <input id="markets" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., LATAM / India / US">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-800 mb-1">Segment</label>
+          <input id="segment" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., SMB / Enterprise / Consumer">
+        </div>
+      </div>
+      <button type="submit" class="focusable inline-flex items-center justify-center px-6 py-3 rounded-full bg-purple-600 text-white font-semibold hover:bg-purple-700">Continue</button>
+    </form>
+
+    <p class="text-xs text-gray-500 mt-4">Params go as <code>?entry=company&name=Spotify&markets=...&segment=...</code></p>
+  </main>
+
+  <script>
+    document.getElementById('companyForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const params = new URLSearchParams({
+        entry: 'company',
+        name: document.getElementById('name').value,
+        markets: document.getElementById('markets').value,
+        segment: document.getElementById('segment').value
+      });
+      window.location.href = 'https://nextify-dashboard-100.streamlit.app/?' + params.toString();
+    });
+  </script>
+</body>
+</html>
 
