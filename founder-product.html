@@ -1,62 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Founder • Breakthrough product</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nextify • Founder – Product</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style> body{font-family:'Inter',sans-serif}.focusable:focus{outline:2px solid #2563eb;outline-offset:2px} </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .label-required::after { content: " *"; color: #ef4444; font-weight: 600; margin-left: 2px; }
+    input::placeholder, textarea::placeholder { color: #9ca3af; }
+  </style>
 </head>
-<body class="bg-gray-50">
-  <nav class="bg-white shadow-sm">
-    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
-      <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-blue-600 focusable">Back</a>
+<body class="bg-gray-50 min-h-screen">
+<header class="bg-white shadow-sm">
+  <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+    <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
+    <a href="roles.html" class="text-sm text-gray-600 hover:text-blue-600">← Back to roles</a>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 py-10">
+  <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Founder • Explore a Product Direction</h1>
+  <p class="text-gray-600 mb-8">Describe the product you want to pursue. We’ll analyze scope, competition, and opportunity.</p>
+
+  <form id="founder-form" data-journey="product" class="bg-white rounded-2xl shadow p-6 md:p-8 space-y-6">
+    <div>
+      <label for="product_vision" class="block text-sm font-semibold text-gray-800 label-required">Product vision</label>
+      <input id="product_vision" name="product_vision" type="text" required
+             placeholder="e.g., Build the next Duolingo for coding"
+             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
     </div>
-  </nav>
 
-  <main class="max-w-3xl mx-auto px-4 py-8">
-    <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">Breakthrough product</h1>
-    <p class="text-gray-600 mb-8">Start from a product scope. We’ll explore differentiation, feasibility, and GTM.</p>
+    <div>
+      <label for="category" class="block text-sm font-semibold text-gray-800">Category</label>
+      <input id="category" name="category" type="text"
+             placeholder="e.g., EdTech"
+             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+    </div>
 
-    <form id="productForm" class="bg-white rounded-2xl shadow p-6 space-y-5">
-      <div>
-        <label class="block text-sm font-semibold text-gray-800 mb-1">Product/category</label>
-        <input id="product" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., AI therapy assistant" required>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-800 mb-1">Key features / scope</label>
-        <textarea id="features" class="w-full border rounded-xl px-4 py-3" rows="4" placeholder="e.g., voice chat, offline mode, HIPAA-ready"></textarea>
-      </div>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold text-gray-800 mb-1">Primary users</label>
-          <input id="users" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., therapists, students">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-800 mb-1">Target markets</label>
-          <input id="markets" type="text" class="w-full border rounded-xl px-4 py-3" placeholder="e.g., EU, US, India">
-        </div>
-      </div>
-      <button type="submit" class="focusable inline-flex items-center justify-center px-6 py-3 rounded-full bg-rose-600 text-white font-semibold hover:bg-rose-700">Continue</button>
-    </form>
+    <div>
+      <label for="target_users" class="block text-sm font-semibold text-gray-800">Target users</label>
+      <input id="target_users" name="target_users" type="text"
+             placeholder="e.g., CS students; junior developers"
+             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+    </div>
 
-    <p class="text-xs text-gray-500 mt-4">Params go as <code>?entry=product&product=...&features=...&users=...&markets=...</code></p>
-  </main>
+    <div>
+      <label for="key_features" class="block text-sm font-semibold text-gray-800">Key features</label>
+      <textarea id="key_features" name="key_features" rows="4"
+                placeholder="e.g., bite-sized lessons; auto feedback; code challenges"
+                class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+    </div>
 
-  <script>
-    document.getElementById('productForm').addEventListener('submit', function(e){
+    <div>
+      <label for="pricing_model" class="block text-sm font-semibold text-gray-800">Pricing model</label>
+      <input id="pricing_model" name="pricing_model" type="text"
+             placeholder="e.g., Freemium; subscription; seat-based"
+             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+    </div>
+
+    <div class="flex items-center gap-3 pt-2">
+      <a href="roles.html" class="inline-flex justify-center px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
+      <button type="submit" class="inline-flex justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Continue</button>
+    </div>
+  </form>
+</main>
+
+<script>
+  (function () {
+    const form = document.getElementById("founder-form");
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const params = new URLSearchParams({
-        entry: 'product',
-        product: document.getElementById('product').value,
-        features: document.getElementById('features').value,
-        users: document.getElementById('users').value,
-        markets: document.getElementById('markets').value
-      });
-      window.location.href = 'https://nextify-dashboard-100.streamlit.app/?' + params.toString();
+      const journeyType = form.dataset.journey; // "product"
+      const payload = Object.fromEntries(new FormData(form).entries());
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ journey_type: journeyType, payload })
+        });
+        if (!res.ok) throw new Error("Submit failed");
+        const { job_id } = await res.json();
+        const q = new URLSearchParams({ job_id, journey: journeyType });
+        window.location.href = `founder-processing.html?${q.toString()}`;
+      } catch (err) {
+        console.error(err);
+        alert("Sorry, something went wrong submitting your request.");
+      }
     });
-  </script>
+  })();
+</script>
 </body>
 </html>
-
