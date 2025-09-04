@@ -4,86 +4,59 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Nextify • Founder – Idea</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
     .label-required::after { content: " *"; color: #ef4444; font-weight: 600; margin-left: 2px; }
     input::placeholder, textarea::placeholder { color: #9ca3af; }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-<header class="bg-white shadow-sm">
-  <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-    <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
-    <a href="roles.html" class="text-sm text-gray-600 hover:text-blue-600">← Back to roles</a>
-  </div>
-</header>
-
-<main class="max-w-3xl mx-auto px-4 py-10">
-  <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Founder • Start with an Idea</h1>
-  <p class="text-gray-600 mb-8">Share your idea and the problem it solves. We’ll stress-test it and generate alternatives.</p>
-
-  <form id="founder-form" data-journey="idea" class="bg-white rounded-2xl shadow p-6 md:p-8 space-y-6">
-    <div>
-      <label for="idea_title" class="block text-sm font-semibold text-gray-800 label-required">Idea title</label>
-      <input id="idea_title" name="idea_title" type="text" required
-             placeholder="e.g., Neighborhood energy-sharing app"
-             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+  <header class="bg-white shadow-sm">
+    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
+      <a href="roles.html" class="text-sm text-gray-600 hover:text-blue-600">← Back to roles</a>
     </div>
+  </header>
 
-    <div>
-      <label for="problem" class="block text-sm font-semibold text-gray-800 label-required">What problem does it solve?</label>
-      <textarea id="problem" name="problem" rows="4" required
-                placeholder="e.g., High electricity costs and wasted rooftop solar capacity in urban apartments"
-                class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-    </div>
-
-    <div>
-      <label for="audience" class="block text-sm font-semibold text-gray-800">Primary audience</label>
-      <input id="audience" name="audience" type="text"
-             placeholder="e.g., Apartment dwellers; property managers"
-             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-    </div>
-
-    <div>
-      <label for="constraints" class="block text-sm font-semibold text-gray-800">Constraints / assumptions</label>
-      <input id="constraints" name="constraints" type="text"
-             placeholder="e.g., Mobile-first; low hardware cost; regulatory friendly"
-             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-    </div>
-
-    <div class="flex items-center gap-3 pt-2">
-      <a href="roles.html" class="inline-flex justify-center px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
-      <button type="submit" class="inline-flex justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Continue</button>
-    </div>
-  </form>
-</main>
-
-<script>
-  (function () {
-    const form = document.getElementById("founder-form");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const journeyType = form.dataset.journey; // "idea"
-      const payload = Object.fromEntries(new FormData(form).entries());
-      try {
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Founder • Start with an Idea</h1>
+    <form id="founder-form" data-journey="idea" class="bg-white rounded-2xl shadow p-6 space-y-6">
+      <div>
+        <label for="idea_title" class="block text-sm font-semibold text-gray-800 label-required">Idea title</label>
+        <input id="idea_title" name="idea_title" type="text" required
+               placeholder="e.g., Neighborhood energy-sharing app"
+               class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label for="problem" class="block text-sm font-semibold text-gray-800 label-required">Problem it solves</label>
+        <textarea id="problem" name="problem" rows="4" required
+                  placeholder="e.g., High electricity costs and wasted rooftop solar capacity in urban apartments"
+                  class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+      <div class="flex items-center gap-3 pt-2">
+        <a href="roles.html" class="px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
+        <button type="submit" class="px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700">Continue</button>
+      </div>
+    </form>
+  </main>
+  <script>
+    (function () {
+      const form = document.getElementById("founder-form");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const journeyType = form.dataset.journey;
+        const payload = Object.fromEntries(new FormData(form).entries());
         const res = await fetch("http://127.0.0.1:8000/api/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ journey_type: journeyType, payload })
         });
-        if (!res.ok) throw new Error("Submit failed");
         const { job_id } = await res.json();
         const q = new URLSearchParams({ job_id, journey: journeyType });
         window.location.href = `founder-processing.html?${q.toString()}`;
-      } catch (err) {
-        console.error(err);
-        alert("Sorry, something went wrong submitting your request.");
-      }
-    });
-  })();
-</script>
+      });
+    })();
+  </script>
 </body>
 </html>
