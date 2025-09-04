@@ -12,4 +12,6 @@ vertexai
 vertexai	
 IPython 
 ipython	
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
 fpdf2	
