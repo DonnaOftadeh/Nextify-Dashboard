@@ -68,5 +68,14 @@
       </div>
     </form>
   </main>
+  <script>
+  // redirect to processing page with the company as a query param
+  document.getElementById('company-form').addEventListener('submit', function () {
+    const v = document.getElementById('bench_company').value.trim();
+    if (!v) return; // browser required validation already handles empty case
+    const qs = new URLSearchParams({ bench_company: v });
+    window.location.href = `founder-processing.html?${qs.toString()}`;
+    });
+  </script>
 </body>
 </html>
