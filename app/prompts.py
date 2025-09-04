@@ -1,227 +1,168 @@
 # app/prompts.py
+# =============================================================================
+# Nextify Agent Prompts (Final Unified Version)
+# =============================================================================
 
-prompt_templates = {
-    # === FEEDBACK AGENT ===
-    "feedback": {
-        "description": "Summarizes raw user reviews and NPS comments into concise insights.",
-        "wizard": "Howler Whisperer (Feedback Summarizer)",
-        "style": "Few-Shot",
-        "grounding": [
-            "https://www.trustpilot.com/review/app.com",
-            "https://play.google.com/store",
-            "https://apps.apple.com"
-        ],
-        "prompt": """
-        Here are examples of how to summarize feedback in a concise, structured way:
+# --- Base grounding texts ----------------------------------------------------
+OLD_GROUNDING = """
+Use validated product management practices:
+- Align insights with company OKRs, mission, and strategy.
+- Ensure outputs are concise, structured, and actionable.
+- Avoid hallucinations: if info is not in user input or a known source, ask for clarification.
+- Consider competitors, market trends, and customer feedback holistically.
+""".strip()
 
-        [Example 1]
-        Input:
-        - “Love the content, but the app keeps crashing on older phones.”
-        - “Great discovery features! I wish it supported offline.”
-        - “UI is clean, but it’s hard to find a way to save playlists quickly.”
-        Output:
-        - Summary: Users like content discovery and UI, but stability issues on older devices and missing offline mode are pain points. Playlist saving is discoverability issue.
-        - Positives: Discovery, UI
-        - Negatives: Crashes on old devices, no offline mode
-        - Opportunities: Add offline mode, improve playlist saving UX, optimize for legacy devices
+NEW_GROUNDING = """
+Additive grounding:
+- Prefer official sources (websites, press releases, product docs).
+- If ambiguous, pause and ask clarifying questions.
+- If information is missing, ask user to refine (problem, target, region, etc.).
+- Explicitly label assumptions and unknowns.
+""".strip()
 
-        [Example 2]
-        Input:
-        - “Customer support is slow.”
-        - “I had billing issues and couldn’t get help in time.”
-        Output:
-        - Summary: Support response time and billing help are top user dissatisfaction drivers.
-        - Negatives: Slow support, billing assistance
-        - Opportunities: Improve SLA, add self-serve billing help
+def merged_grounding() -> str:
+    return (OLD_GROUNDING + "\n\n" + NEW_GROUNDING).strip()
 
-        Task:
-        You will receive a context about a product or company along with notes from the user. Summarize the likely customer feedback (or proxy feedback from adjacent products if none exists) in the clear, structured format above.
-
-        Constraints:
-        - Keep it short, actionable, and grouped by themes.
-        - Include at most 5 bullets per section.
-
-        ### Inputs
-        - Company (if any): {company_name}
-        - Industry Context: {industry_context}
-        - User Notes: {user_notes}
-
-        ### Output (use this exact structure)
-        - Summary:
-        - Positives:
-        - Negatives:
-        - Opportunities:
-        """,
-        "temperature": 0.3
-    },
-
-    # === ISSUE FINDER AGENT ===
-    "issue": {
-        "description": "Identifies root issues and risks based on feedback and domain context.",
-        "wizard": "The Marauder (Issue Finder)",
-        "prompt": """
-        You are the Issue Finder. From the context, produce the most likely root issues, risks, and blockers.
-        Use a short, prioritized list with impact and confidence.
-
-        ### Inputs
-        - Company (if any): {company_name}
-        - Industry Context: {industry_context}
-        - User Notes: {user_notes}
-
-        ### Output
-        - Top Issues (max 5): [Issue, Why it matters, Impact (High/Med/Low), Confidence (0-100%)]
-        - Risks & Unknowns (max 5)
-        - Quick Wins (max 5)
-        """,
-        "temperature": 0.35
-    },
-
-    # === SENTIMENT AGENT ===
-    "sentiment": {
-        "description": "Summarizes sentiment by theme and persona.",
-        "wizard": "Legilimens (Sentiment Analyst)",
-        "prompt": """
-        Derive likely sentiment clusters across typical personas (e.g., casual users, power users, partners).
-        If no company is given, infer from industry exemplars.
-
-        ### Inputs
-        - Company (if any): {company_name}
-        - Industry Context: {industry_context}
-        - User Notes: {user_notes}
-
-        ### Output
-        - Persona Sentiment Table (max 4 personas): [Persona, Top Likes, Top Dislikes, Overall Sentiment (-,0,+)]
-        - Notable Quotes (fabricated but realistic, 3-5 short lines)
-        """,
-        "temperature": 0.4
-    },
-
-    # === COMPETITOR / LANDSCAPE ANALYST ===
-    "competitor": {
-        "description": "Maps direct and adjacent competitors; highlights differentiators & moats.",
-        "wizard": "The Seer (Competitor Analyst)",
-        "prompt": """
-        Build a concise landscape snapshot. Split into direct competitors (same core job-to-be-done)
-        and adjacent alternatives (partial or substitute solutions). Extract differentiators and moats.
-
-        ### Inputs
-        - Company (if any): {company_name}
-        - Industry Context: {industry_context}
-        - User Notes: {user_notes}
-
-        ### Output
-        - Direct Competitors (3-5): [Name, What they do best, Weakness, Notable pricing/region]
-        - Adjacent Alternatives (3-5)
-        - Differentiation Opportunities (3-5)
-        - Potential Moats (2-4)
-        """,
-        "temperature": 0.35
-    },
-
-    # === FEATURE IDEATOR ===
-    "ideation": {
-        "description": "Proposes features / experiments aligned to findings.",
-        "wizard": "Room of Requirement (Feature Ideator)",
-        "prompt": """
-        Generate tightly-scoped features or experiments that directly address the top issues and leverage opportunities.
-
-        ### Inputs
-        - Company (if any): {company_name}
-        - Industry Context: {industry_context}
-        - User Notes: {user_notes}
-
-        ### Output
-        - Feature Ideas (5-8): [Name, Problem it solves, Success metric, Complexity (S/M/L)]
-        - Experiments (3-5): [Hypothesis, Minimum test, Metric, Decision rule]
-        """,
-        "temperature": 0.55
-    },
-
-    # === STRATEGIC SYNTHESIZER ===
-    "synthesis": {
-        "description": "Merges all agent outputs into one coherent strategy.",
-        "wizard": "The Pensive (Strategic Synthesizer)",
-        "prompt": """
-        You will receive the outputs from these agents: Feedback, Issue Finder, Sentiment, Competitor, Ideation.
-        Synthesize them into a **single concise plan** with clear scope and next steps.
-
-        ### Inputs
-        - Company (if any): {company_name}
-        - Industry Context: {industry_context}
-        - User Notes: {user_notes}
-        - Agent Outputs:
-          - Feedback: {feedback_output}
-          - Issue: {issue_output}
-          - Sentiment: {sentiment_output}
-          - Competitor: {competitor_output}
-          - Ideation: {ideation_output}
-
-        ### Output
-        - One-Liner Positioning
-        - Target User & Core Job-to-be-Done
-        - Top 3 Bets (with why)
-        - 30/60/90 (bullet list)
-        - Key Risks & How We’ll Learn
-        - Metrics to Watch
-        """,
-        "temperature": 0.35
-    },
-
-    # (Optional post-synthesis helpers — we can wire later)
-    "prioritization": {
-        "description": "Ranks features vs impact/effort.",
-        "wizard": "RICE/ICE Ranker",
-        "prompt": """
-        Prioritize the proposed features using RICE. Keep output short.
-
-        ### Inputs
-        - Feature Ideas: {feature_list}
-
-        ### Output
-        - RICE Table: [Feature, Reach, Impact(1-3), Confidence(0-100%), Effort(1-3), Score]
-        - Top 5 to tackle next
-        """,
-        "temperature": 0.3
-    },
-
-    "okr": {
-        "description": "Turns plan into draft OKRs.",
-        "wizard": "OKR Shaper",
-        "prompt": """
-        Convert strategy into OKRs (1–2 Objectives, 3–4 KRs each). Keep crisp, measurable.
-
-        ### Inputs
-        - Strategy: {strategy_text}
-
-        ### Output
-        - Objective 1:
-          - KR1:
-          - KR2:
-          - KR3:
-        - Objective 2:
-          - KR1:
-          - KR2:
-          - KR3:
-        """,
-        "temperature": 0.25
-    },
-
-    "formatter": {
-        "description": "Polishes for human-friendly reading.",
-        "wizard": "Story Weaver",
-        "prompt": """
-        Format for exec readability: short sections, strong headings, bullets, and clarity, tone: practical.
-
-        ### Inputs
-        - Strategy: {strategy_text}
-
-        ### Final Output
-        - Title:
-        - Summary:
-        - Key Highlights:
-        - Recommended Actions:
-        - Closing:
-        """,
-        "temperature": 0.7
-    }
+# --- Journey-specific intros -------------------------------------------------
+JOURNEY_PREFIX = {
+    "company": """Journey: Company Benchmark
+Reference company: {company_name}.
+If the company is unknown, ask for confirmation or a public site link.""",
+    "industry": """Journey: Industry-First
+Industry: {industry_context}.
+If vague, ask whether to zoom in on a sub-sector.""",
+    "product": """Journey: Product-First
+Product vision: {product_scope} for {target_user}.
+If unclear, ask for the core job-to-be-done and example.""",
+    "idea": """Journey: Idea-First
+Idea: {idea_statement}.
+If missing problem/target, ask user for them before continuing."""
 }
+
+def journey_intro_for(journey_type: str, context: dict) -> str:
+    tpl = JOURNEY_PREFIX.get(journey_type, "")
+    return tpl.format(
+        company_name=context.get("company_name", ""),
+        industry_context=context.get("industry_context", ""),
+        product_scope=context.get("product_scope", ""),
+        idea_statement=context.get("idea_statement", ""),
+        target_user=context.get("target_user", ""),
+    ).strip()
+
+# --- Guardrail / interactivity protocol -------------------------------------
+INTERACTION_PROTOCOL = """
+Interaction protocol:
+1. If input is ambiguous/missing → return ONLY:
+{
+  "status": "NEEDS_CLARIFICATION",
+  "question": "<ask one short question>",
+  "options": ["<choice_1>", "<choice_2>", "<choice_3>"]
+}
+2. If sufficient → return ONLY the JSON schema requested in the task.
+No prose outside JSON.
+""".strip()
+
+# --- Agent prompts (fill in your originals) ---------------------------------
+AGENT_BASE_PROMPTS = {
+    "feedback": """
+Role: Feedback Agent
+Analyze customer/user feedback for the given journey context.
+Return JSON:
+{
+  "insights": ["<bullet>", "<bullet>"],
+  "risks": ["<bullet>"],
+  "opportunities": ["<bullet>"]
+}
+""",
+    "issue": """
+Role: Issue Agent
+Identify pain points, blockers, or structural issues.
+Return JSON:
+{
+  "issues": ["<bullet>", "<bullet>"],
+  "root_causes": ["<bullet>"]
+}
+""",
+    "sentiment": """
+Role: Sentiment Agent
+Extract overall sentiment and user tone.
+Return JSON:
+{
+  "sentiment": "<positive|neutral|negative>",
+  "rationale": "<short text>"
+}
+""",
+    "competitor": """
+Role: Competitor Agent
+Compare competitive landscape given journey type.
+Return JSON:
+{
+  "competitors": ["<name1>", "<name2>"],
+  "gaps_vs_competitors": ["<bullet>"]
+}
+""",
+    "ideation": """
+Role: Ideation Agent
+Brainstorm potential features, enhancements, or pivots.
+Return JSON:
+{
+  "feature_ideas": ["<bullet>", "<bullet>"],
+  "differentiators": ["<bullet>"]
+}
+""",
+    "synthesis": """
+Role: Synthesis Agent
+Combine all parallel agent outputs into a structured report.
+Return JSON:
+{
+  "summary": "<executive summary>",
+  "recommendations": ["<bullet>", "<bullet>"]
+}
+"""
+}
+
+# --- Wrappers to inject journey intro + grounding ----------------------------
+def wrap_agent_prompt(agent_key: str, journey_type: str, context: dict) -> str:
+    base = AGENT_BASE_PROMPTS.get(agent_key, "").strip()
+    intro = journey_intro_for(journey_type, context)
+    ground = merged_grounding()
+    return f"""{INTERACTION_PROTOCOL}
+
+{intro}
+
+Grounding:
+{ground}
+
+{base}
+""".strip()
+
+# --- Pre-passes --------------------------------------------------------------
+ROUTER_BASE = """
+Role: Router
+Validate inputs → normalize fields.
+
+Return ONLY:
+{
+  "status": "OK",
+  "normalized": {
+    "company_name": "<string or empty>",
+    "industry_context": "<string or empty>",
+    "product_scope": "<string or empty>",
+    "idea_statement": "<string or empty>",
+    "target_user": "<string or empty>",
+    "regions": "<string or empty>"
+  }
+}
+If insufficient → NEEDS_CLARIFICATION.
+""".strip()
+
+def router_prompt(journey_type: str, context: dict) -> str:
+    return f"""{INTERACTION_PROTOCOL}
+
+{journey_intro_for(journey_type, context)}
+
+Grounding:
+{merged_grounding()}
+
+{ROUTER_BASE}
+""".strip()
