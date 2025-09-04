@@ -4,97 +4,59 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Nextify • Founder – Company</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
     .label-required::after { content: " *"; color: #ef4444; font-weight: 600; margin-left: 2px; }
-    input::placeholder, textarea::placeholder, select:invalid { color: #9ca3af; }
+    input::placeholder, textarea::placeholder { color: #9ca3af; }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-<header class="bg-white shadow-sm">
-  <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-    <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
-    <a href="roles.html" class="text-sm text-gray-600 hover:text-blue-600">← Back to roles</a>
-  </div>
-</header>
-
-<main class="max-w-3xl mx-auto px-4 py-10">
-  <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Founder • Benchmark a Company</h1>
-  <p class="text-gray-600 mb-8">Tell us the company you want to benchmark against. We’ll use your input to guide the multi-agent analysis.</p>
-
-  <form id="founder-form" data-journey="company" class="bg-white rounded-2xl shadow p-6 md:p-8 space-y-6">
-
-    <div>
-      <label for="company_name" class="block text-sm font-semibold text-gray-800 label-required">Benchmark company</label>
-      <input id="company_name" name="company_name" type="text" required
-             placeholder="e.g., Spotify"
-             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-      <p class="mt-2 text-xs text-gray-500">Use a well-known company to anchor the analysis.</p>
+  <header class="bg-white shadow-sm">
+    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
+      <a href="roles.html" class="text-sm text-gray-600 hover:text-blue-600">← Back to roles</a>
     </div>
+  </header>
 
-    <div>
-      <label for="region" class="block text-sm font-semibold text-gray-800">Target region(s)</label>
-      <input id="region" name="region" type="text"
-             placeholder="e.g., Global; North America"
-             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-    </div>
-
-    <div>
-      <label for="target_segments" class="block text-sm font-semibold text-gray-800">Target segments</label>
-      <input id="target_segments" name="target_segments" type="text"
-             placeholder="e.g., Gen Z listeners; indie artists"
-             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-    </div>
-
-    <!-- Optional: keep if you had them -->
-    <div>
-      <label for="problem_statement" class="block text-sm font-semibold text-gray-800">Problem / need</label>
-      <textarea id="problem_statement" name="problem_statement" rows="3"
-                placeholder="e.g., Monetization gaps for long-tail creators"
-                class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-    </div>
-
-    <div>
-      <label for="differentiation" class="block text-sm font-semibold text-gray-800">Differentiation you want</label>
-      <input id="differentiation" name="differentiation" type="text"
-             placeholder="e.g., Better discovery; social features"
-             class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-    </div>
-
-    <div class="flex items-center gap-3 pt-2">
-      <a href="roles.html" class="inline-flex justify-center px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
-      <button type="submit" class="inline-flex justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Continue</button>
-    </div>
-  </form>
-</main>
-
-<script>
-  (function () {
-    const form = document.getElementById("founder-form");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const journeyType = form.dataset.journey; // "company"
-      const payload = Object.fromEntries(new FormData(form).entries());
-      if (!payload.region || !payload.region.trim()) payload.region = "Global";
-      try {
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Founder • Benchmark a Company</h1>
+    <form id="founder-form" data-journey="company" class="bg-white rounded-2xl shadow p-6 space-y-6">
+      <div>
+        <label for="company_name" class="block text-sm font-semibold text-gray-800 label-required">Benchmark company</label>
+        <input id="company_name" name="company_name" type="text" required
+               placeholder="e.g., Spotify"
+               class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label for="region" class="block text-sm font-semibold text-gray-800 label-required">Target region(s)</label>
+        <input id="region" name="region" type="text" required
+               placeholder="e.g., Global; North America"
+               class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div class="flex items-center gap-3 pt-2">
+        <a href="roles.html" class="px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
+        <button type="submit" class="px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700">Continue</button>
+      </div>
+    </form>
+  </main>
+  <script>
+    (function () {
+      const form = document.getElementById("founder-form");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const journeyType = form.dataset.journey;
+        const payload = Object.fromEntries(new FormData(form).entries());
         const res = await fetch("http://127.0.0.1:8000/api/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ journey_type: journeyType, payload })
         });
-        if (!res.ok) throw new Error("Submit failed");
         const { job_id } = await res.json();
         const q = new URLSearchParams({ job_id, journey: journeyType });
         window.location.href = `founder-processing.html?${q.toString()}`;
-      } catch (err) {
-        console.error(err);
-        alert("Sorry, something went wrong submitting your request.");
-      }
-    });
-  })();
-</script>
+      });
+    })();
+  </script>
 </body>
 </html>
