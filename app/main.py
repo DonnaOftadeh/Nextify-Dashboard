@@ -1,4 +1,5 @@
 # app/main.py
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -9,9 +10,9 @@ import uuid
 import time
 from fpdf import FPDF
 import os
-
 from .agents import run_multi_agent
-
+from dotenv import load_dotenv
+load_dotenv("app/.env")
 # -----------------------------
 # FastAPI setup
 # -----------------------------
