@@ -1,18 +1,25 @@
+# Dashboard / analysis
 streamlit
 pandas
 plotly
-seaborn 
+seaborn
 matplotlib
 numpy
-pandas
 bs4
+IPython
+
+# Google + GenAI
 google
 google-generativeai
 vertexai
-vertexai	
-IPython 
-ipython	
+
+# OpenAI (optional, in case you switch later)
+openai
+
+# Backend API
 fastapi==0.111.0
 uvicorn[standard]==0.30.0
-fpdf2	
-openai
+fpdf2
+python-dotenv
+httpx
+slowapi
