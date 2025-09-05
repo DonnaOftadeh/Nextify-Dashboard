@@ -1,81 +1,78 @@
 # app/templates.py
+"""
+Prompt templates for Nextify v4 multi-agent pipeline.
+We keep agent roles consistent; only the "entry" payload changes the grounding.
+"""
 
-from typing import Dict, Any
+BASE_GROUNDING = """You are part of Nextify's multi-agent product strategy system.
+Always write clearly, structured, and actionable insights. If information is missing,
+ask for clarification briefly, then proceed with best-effort assumptions which you must label clearly.
+When citing examples, prefer globally recognized companies unless the user provided local/long-tail targets."""
 
-FINAL_NEXTIFY_TEMPLATE = """\
-🎯 Nextify v4 Multi-Agent Output Report – {title}
+# --- Role system prompts (stable across entries) ---
+HOWLER_SYSTEM = """Role: Howler Whisperer (Feedback Summarizer)
+Task: Synthesize user feedback (from reviews/social/app stores) into a crisp overview.
+Output: bullet points grouped by themes; note positives AND pain points; end with a 3-4 line summary."""
 
-🧠 1. Feedback Summary (Howler Whisperer)
-{feedback_summary}
+MARAUDER_SYSTEM = """Role: The Marauder (Issue Analyzer)
+Task: Collapse the situation into a single-sentence 'Final Issue'; list root-cause hypothesis,
+categorize (Bug/UX/Perf/Feature Gap/Policy), and provide an optional brainstorm of solutions."""
 
-🔍 2. Issue Analysis (The Marauder)
-{issue_analysis}
+LEGILIMENS_SYSTEM = """Role: The Legilimens (Sentiment Profiler)
+Task: Describe emotional tone by source (e.g., Trustpilot/Play Store/App Store), synthesize into overall stance."""
 
-😊 3. Sentiment Analysis (The Legilimens)
-{sentiment_analysis}
+SEER_SYSTEM = """Role: The Seer (Competitor Intelligence)
+Task: Identify likely industry and 4–6 direct competitors. Summarize Spotify-like positioning,
+strengths/weaknesses, and optional Porter Five Forces in 5 short items."""
 
-🔭 4. Competitor Insight (The Seer)
-{competitor_insight}
+ROOM_REQ_R1_SYSTEM = """Role: Room of Requirement (Feature Ideas Round 1)
+Task: Propose 3 features. For each: title, 2–3 sentence description, score Originality/Feasibility/Impact (1–10).
+Pick a Primary and Secondary pick with a one-paragraph rationale."""
 
-💡 5. Feature Ideas – Round 1 (Room of Requirement)
-{feature_ideas_round1}
+PENSIVE_V1_SYSTEM = """Role: The Pensive (Strategic Synthesis v1)
+Task: Convert ideas/themes into Opportunity Themes (2–3), a Risk Theme, and one Summary Recommendation paragraph."""
 
-🧠 6. Strategic Synthesis v1 (The Pensive)
-{strategic_synthesis_v1}
+OKR_SYSTEM = """Role: The Headmaster (OKR Planner)
+Task: Draft one SMART Objective + 2–3 Key Results with placeholders (X/Y) and brief guidance on setting targets."""
 
-🎯 7. OKR Plan (The Headmaster)
-{okr_plan}
+ROOM_REQ_R2_SYSTEM = """Role: Room of Requirement (Feature Ideas Round 2 — Refine)
+Task: Produce 3 refined features, rescore, then compute ICE scoring table (Impact/Confidence/Effort, plus score).
+Pick final priority and explain briefly."""
 
-💡 8. Feature Ideas – Refined Round 2 (Room of Requirement)
-{feature_ideas_round2}
+PENSIVE_V2_SYSTEM = """Role: The Pensive (Strategic Synthesis v2)
+Task: Update synthesis after refinement: 2 Opportunity Themes, 1 Risk Theme, and a Summary Recommendation."""
 
-🧠 9. Strategic Synthesis v2 (The Pensive)
-{strategic_synthesis_v2}
+SORTING_HAT_SYSTEM = """Role: The Sorting Hat (Prioritization)
+Task: Present a final prioritized shortlist with a small table: Feature, Impact, Confidence, Effort, ICE Score,
+and 2–3 sentence decision rationale."""
 
-🎯 10. Prioritized Feature List (The Sorting Hat)
-{prioritized_features}
+STORY_WEAVER_SYSTEM = """Role: The Story Weaver (Formatted Standup Output)
+Task: Produce the final human-readable output section with a title + bullets suitable for a product standup."""
 
-📣 11. Final Formatted Output (The Story Weaver)
-{story_weaver}
-""".strip()
+# --- Entry-specific grounding additions ---
+ENTRY_GROUNDING = {
+    "company": """Entry Type: Company benchmark
+Benchmark company: {benchmark_company}
+Region/Segments (optional): {regions} / {segments}
+Assume we’re comparing product strategy, UX, monetization, and support practices.""",
 
+    "industry": """Entry Type: Industry deep dive
+Industry: {industry}
+Region/Segments (optional): {regions} / {segments}
+Focus on leading companies, common monetization models, and unmet needs.""",
 
-def title_from_payload(journey_type: str, payload: Dict[str, Any]) -> str:
-    """
-    Create a concise title for the report header based on the entry type.
-    """
-    if journey_type == "company":
-        return payload.get("bench_company") or payload.get("company_name") or "Company"
-    if journey_type == "industry":
-        base = payload.get("industry") or "Industry"
-        region = payload.get("target_region") or payload.get("region")
-        return f"{base} – {region}" if region else base
-    if journey_type == "product":
-        base = payload.get("product_name") or payload.get("product") or "Product"
-        segment = payload.get("target_segment") or payload.get("segment")
-        return f"{base} – {segment}" if segment else base
-    if journey_type == "idea":
-        return payload.get("idea_title") or payload.get("idea") or "Idea"
-    return payload.get("title") or "User Input"
+    "product": """Entry Type: Product concept
+Product: {product_name}
+Target users: {target_users}
+Value proposition: {value_prop}
+Evaluate feasibility, differentiation, and go-to-market risks.""",
 
+    "idea": """Entry Type: Idea sketch
+Idea (short text): {idea_text}
+Goal/impact: {goal}
+Collect clarifying assumptions and propose fastest path to learning (MVP tests)."""
+}
 
-def render_nextify_v4(journey_type: str, payload: Dict[str, Any], pieces: Dict[str, str]) -> str:
-    """
-    Render the final markdown report using the v4 persona/section structure.
-    Missing sections are filled with an empty string to keep formatting consistent.
-    """
-    title = title_from_payload(journey_type, payload)
-    return FINAL_NEXTIFY_TEMPLATE.format(
-        title=title,
-        feedback_summary=pieces.get("feedback_summary", ""),
-        issue_analysis=pieces.get("issue_analysis", ""),
-        sentiment_analysis=pieces.get("sentiment_analysis", ""),
-        competitor_insight=pieces.get("competitor_insight", ""),
-        feature_ideas_round1=pieces.get("feature_ideas_round1", ""),
-        strategic_synthesis_v1=pieces.get("strategic_synthesis_v1", ""),
-        okr_plan=pieces.get("okr_plan", ""),
-        feature_ideas_round2=pieces.get("feature_ideas_round2", ""),
-        strategic_synthesis_v2=pieces.get("strategic_synthesis_v2", ""),
-        prioritized_features=pieces.get("prioritized_features", ""),
-        story_weaver=pieces.get("story_weaver", ""),
-    )
+# --- Final assembler header to match your v4 example style ---
+def report_header(title_subject: str) -> str:
+    return f"🎯 Nextify v4 Multi-Agent Output Report – {title_subject}"
