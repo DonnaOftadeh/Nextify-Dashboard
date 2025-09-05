@@ -10,16 +10,16 @@ import time
 from fpdf import FPDF
 import os
 
-from .agents import run_agents
+from .agents import run_multi_agent
 
 # -----------------------------
 # FastAPI setup
 # -----------------------------
-app = FastAPI(title="Nextify Backend MVP")
+app = FastAPI(title="Nextify Backend (Gemini)")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # tighten for prod
+    allow_origins=["*"],   # tighten later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,104 +29,107 @@ app.add_middleware(
 # In-memory job store (MVP)
 # -----------------------------
 class Submission(BaseModel):
-    # pydantic v2: use 'pattern' instead of 'regex'
+    # pydantic v2 uses 'pattern' instead of 'regex'
     journey_type: str = Field(..., pattern="^(company|industry|product|idea)$")
     payload: Dict[str, Any] = Field(..., description="Raw form fields from the page")
 
-
 JOBS: Dict[str, Dict[str, Any]] = {}
-DATA_DIR = os.path.join("data")
-PDF_DIR = os.path.join(DATA_DIR, "pdf")
+PDF_DIR = os.path.join("data", "pdf")
 os.makedirs(PDF_DIR, exist_ok=True)
 
+# phases (UI progress)
+UI_STEPS = [
+    "Parse Submission",
+    "Agent Orchestration",
+    "Howler Whisperer",
+    "The Marauder",
+    "The Legilimens",
+    "The Seer",
+    "Room of Requirement (R1)",
+    "The Pensive (v1)",
+    "The Headmaster",
+    "Room of Requirement (R2)",
+    "The Pensive (v2)",
+    "The Sorting Hat",
+    "The Story Weaver",
+    "Write Report (PDF)"
+]
 
-# -----------------------------
-# Utilities
-# -----------------------------
 def _pdf_path(job_id: str) -> str:
     return os.path.join(PDF_DIR, f"{job_id}.pdf")
 
-
-def generate_pdf_from_markdown(job_id: str, title: str, markdown_text: str) -> str:
-    """
-    Simple PDF output of the final report markdown.
-    For now, render as plain text with section breaks. (You can beautify later.)
-    """
+def generate_pdf(job_id: str, title: str, report_text: str) -> str:
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=12)
     pdf.add_page()
     pdf.set_font("Arial", "B", 16)
-    pdf.multi_cell(0, 9, f"Nextify — Innovation Brief\n{title}")
-    pdf.ln(2)
-
+    pdf.multi_cell(0, 9, title)
+    pdf.ln(3)
     pdf.set_font("Arial", "", 11)
-    for line in markdown_text.splitlines():
-        # basic handling for bullets/headers
-        if line.startswith("#") or line.endswith(":"):
-            pdf.set_font("Arial", "B", 12)
-            pdf.multi_cell(0, 6, line.strip("# ").strip())
-            pdf.set_font("Arial", "", 11)
-        else:
-            pdf.multi_cell(0, 6, line)
+
+    # split long content into lines to avoid encoding issues
+    for line in report_text.splitlines():
+        pdf.multi_cell(0, 6, line)
 
     path = _pdf_path(job_id)
     pdf.output(path)
     return path
 
+async def _run_pipeline(job_id: str, submission: Submission):
+    job = JOBS[job_id]
 
-# -----------------------------
-# Background job
-# -----------------------------
-async def run_job(job_id: str, submission: Submission):
-    """
-    Execute the multi-agent pipeline and create a PDF.
-    """
+    # Step 1: parse
+    job["status"] = "running"
+    job["step"] = UI_STEPS[0]
+    job["progress"] = 3
+    job["message"] = "Validating input…"
+    await asyncio.sleep(0.2)
 
-    # helper to update job status
-    def update(step: str, progress: int | None, message: str):
-        job = JOBS[job_id]
-        job["status"] = "running"
-        job["step"] = step
-        if progress is not None:
-            job["progress"] = progress
+    # Step 2: orchestration
+    job["step"] = UI_STEPS[1]
+    job["progress"] = 6
+    job["message"] = "Spinning up agents…"
+    await asyncio.sleep(0.2)
+
+    # progress callback from agents.py
+    def cb(idx: int, section_title: str, message: str):
+        # map agent idx to UI step index (starting after 'Agent Orchestration')
+        ui_index = min(1 + idx, len(UI_STEPS) - 1)
+        job["step"] = section_title
+        # spread progress across 10 agent phases
+        job["progress"] = min(6 + int(idx * (90 / 11)), 95)
         job["message"] = message
 
-    job = JOBS[job_id]
-    job["status"] = "running"
-    job["step"] = "Initialize"
-    job["progress"] = 2
-    job["message"] = "Initializing…"
+    # Run agents (sequential for now)
+    report_text = await run_multi_agent(submission.model_dump(), cb)
 
-    # Run agents (parallel) and assemble markdown
-    try:
-        pieces, final_md = await run_agents(
-            submission.journey_type,
-            submission.payload,
-            status_cb=update
-        )
-    except Exception as e:
-        job["status"] = "error"
-        job["message"] = f"Agent error: {e}"
-        return
+    # Final step: write PDF
+    job["step"] = UI_STEPS[-1]
+    job["message"] = "Writing PDF…"
+    job["progress"] = 97
+    await asyncio.sleep(0.3)
 
-    update("Write PDF", 92, "Writing PDF…")
-    # Title is included as the first line by templates renderer; extract a concise title:
-    title_line = (final_md.splitlines()[0] if final_md else "Nextify v4 Report")[:120]
-    pdf_path = generate_pdf_from_markdown(job_id, title_line, final_md)
+    # pick a nice title
+    subject = (submission.payload.get("bench_company")
+               or submission.payload.get("company_name")
+               or submission.payload.get("industry")
+               or submission.payload.get("product_name")
+               or submission.payload.get("idea_text")
+               or "Nextify Report")
+    title = f"Nextify — {submission.journey_type.capitalize()} Report — {subject}"
 
+    pdf_path = generate_pdf(job_id, title, report_text)
     job["pdf_path"] = pdf_path
     job["progress"] = 100
     job["step"] = "Complete"
     job["status"] = "done"
     job["message"] = "Report ready."
 
-
 # -----------------------------
 # API endpoints
 # -----------------------------
 @app.post("/api/submit")
 async def submit(submission: Submission):
-    """Accepts a submission, starts a background task, returns a job_id."""
     job_id = str(uuid.uuid4())
     JOBS[job_id] = {
         "created_at": time.time(),
@@ -136,11 +139,9 @@ async def submit(submission: Submission):
         "message": "Job queued.",
         "pdf_path": None,
         "journey_type": submission.journey_type,
-        "payload": submission.payload,
     }
-    asyncio.create_task(run_job(job_id, submission))
+    asyncio.create_task(_run_pipeline(job_id, submission))
     return {"job_id": job_id}
-
 
 @app.get("/api/status/{job_id}")
 async def status(job_id: str):
@@ -156,7 +157,6 @@ async def status(job_id: str):
         "ready": job["status"] == "done",
     }
 
-
 @app.get("/api/result/{job_id}")
 async def result(job_id: str):
     job = JOBS.get(job_id)
@@ -166,7 +166,6 @@ async def result(job_id: str):
         return JSONResponse({"error": "Result not ready"}, status_code=202)
     return FileResponse(job["pdf_path"], media_type="application/pdf", filename=f"{job_id}.pdf")
 
-
 @app.get("/")
 async def root():
-    return {"ok": True, "service": "Nextify Backend MVP"}
+    return {"ok": True, "service": "Nextify Backend (Gemini)"}
