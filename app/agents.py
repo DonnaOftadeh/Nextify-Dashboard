@@ -1,100 +1,82 @@
 # app/agents.py
-#
-# Minimal multi-agent runner that can call Gemini or OpenAI.
-# It returns (events, final_markdown). The API will translate events
-# into the status polling you already built.
+"""
+Agent runner. For now this is a self-contained async runner with a LOCAL stub
+that generates coherent text without calling external LLMs, so your backend
+works immediately. Later, you can swap `llm_complete` to OpenAI/Gemini.
+"""
 
+import asyncio
+from typing import Dict, Any, Tuple
 import os
-from typing import Dict, Any, List, Tuple, Optional
-
-from .prompts import (
-    build_system,
-    SYSTEM_ORCHESTRATOR, SYSTEM_RESEARCHER, SYSTEM_ANALYST,
-    SYSTEM_SYNTHESIZER, SYSTEM_CRITIC, SYSTEM_WRITER,
-    user_orchestrator, user_researcher, user_analyst,
-    user_synthesizer, user_critic, user_writer
-)
-
-# -------- Provider selection (Gemini default) ----------
-USE_OPENAI = bool(os.getenv("OPENAI_API_KEY"))
-USE_GEMINI = bool(os.getenv("GOOGLE_API_KEY")) or not USE_OPENAI
-
-_client_gemini = None
-_client_openai = None
-
-def _ensure_clients():
-    global _client_gemini, _client_openai
-    if USE_GEMINI and _client_gemini is None:
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        _client_gemini = genai.GenerativeModel("gemini-1.5-pro")
-    if USE_OPENAI and _client_openai is None:
-        from openai import OpenAI
-        _client_openai = OpenAI()
+import textwrap
+from .prompts import build_agent_prompts
+from .templates import render_nextify_v4
 
 
-def _llm(system: str, user: str) -> str:
-    """Call the selected LLM with a system+user pair and return markdown text."""
-    _ensure_clients()
-    if USE_GEMINI:
-        # Gemini supports system via 'system_instruction'
-        resp = _client_gemini.generate_content(
-            [{"role": "user", "parts": [system + "\n\n" + user]}],
-            safety_settings=None,
-        )
-        return (resp.text or "").strip()
-
-    # OpenAI fallback
-    chat = _client_openai.chat.completions.create(
-        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-        temperature=0.3,
+# ---- LLM adapter (stub) ----
+# Swap this later to real OpenAI/Gemini calls.
+async def llm_complete(prompt: str, max_tokens: int = 800) -> str:
+    """
+    Deterministic local stub: produce concise, structured text by trimming the prompt
+    and returning a templated paragraph. Replace with real LLM calls later.
+    """
+    # Make a tiny deterministic "summary" from prompt sections
+    head = " ".join(prompt.splitlines()[:10])
+    head = textwrap.shorten(head, width=220, placeholder="…")
+    return (
+        "Summary based on provided context:\n"
+        f"- {head}\n"
+        "- Key points acknowledged. Where inputs are unknown, asked for clarifications.\n"
+        "- Proposed pragmatic steps tailored to entry type and constraints."
     )
-    return chat.choices[0].message.content.strip()
 
 
-def run_multi_agent(entry: str, payload: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], str]:
+# ---- Agent Orchestration ----
+
+SECTION_ORDER = [
+    "feedback_summary",
+    "issue_analysis",
+    "sentiment_analysis",
+    "competitor_insight",
+    "feature_ideas_round1",
+    "strategic_synthesis_v1",
+    "okr_plan",
+    "feature_ideas_round2",
+    "strategic_synthesis_v2",
+    "prioritized_features",
+    "story_weaver",
+]
+
+
+async def run_agents(journey_type: str, payload: Dict[str, Any], status_cb=None) -> Tuple[Dict[str, str], str]:
     """
-    Execute the orchestrated flow and return (events, final_markdown).
-    Each event: {"step": "...", "message": "...", "progress": int}
+    Run all agents (parallel), collect outputs, and assemble the final v4 report.
+    status_cb: optional callable(step_name, progress, message)
+    Returns: (pieces dict, final_markdown)
     """
-    events: List[Dict[str, Any]] = []
-    progress = 0
+    if status_cb:
+        status_cb("Prepare Prompts", 5, "Preparing agent prompts…")
 
-    def push(step, msg, p_inc):
-        nonlocal progress
-        progress = min(100, progress + p_inc)
-        events.append({"step": step, "message": msg, "progress": progress})
+    prompts = build_agent_prompts(journey_type, payload)
 
-    system = build_system(entry)
+    async def run_one(key: str):
+        if status_cb:
+            status_cb(f"Running {key}", None, f"Agent '{key}' is generating…")
+        # You can route to different models per key later
+        return key, await llm_complete(prompts[key])
 
-    # 1) Orchestrator
-    push("Orchestrate", "Planning tasks and guardrail questions…", 8)
-    plan_json = _llm(system + "\n\n" + SYSTEM_ORCHESTRATOR, user_orchestrator(entry, payload))
+    if status_cb:
+        status_cb("Parallel Agents", 20, "Launching agents in parallel…")
 
-    # 2) Research
-    push("Research", "Gathering facts and comps…", 18)
-    research_md = _llm(system + "\n\n" + SYSTEM_RESEARCHER, user_researcher(entry, payload))
+    # Run agents concurrently
+    results = await asyncio.gather(*(run_one(k) for k in SECTION_ORDER))
+    pieces = {k: v for k, v in results}
 
-    # 3) Analysis
-    push("Analysis", "Deriving insights & options…", 22)
-    analysis_md = _llm(system + "\n\n" + SYSTEM_ANALYST, user_analyst(entry, payload, research_md))
+    if status_cb:
+        status_cb("Assemble Report", 80, "Assembling final v4 report…")
 
-    # 4) Synthesis
-    push("Synthesis", "Drafting OKRs / plan / MVP…", 22)
-    synthesis_md = _llm(system + "\n\n" + SYSTEM_SYNTHESIZER, user_synthesizer(entry, payload, analysis_md))
+    final_md = render_nextify_v4(journey_type, payload, pieces)
 
-    # 5) Critique
-    push("Critique", "Stress testing assumptions…", 12)
-    critic_md = _llm(system + "\n\n" + SYSTEM_CRITIC, user_critic(entry, payload, synthesis_md))
-
-    # 6) Final
-    push("Compose", "Writing final brief…", 15)
-    final_md = _llm(system + "\n\n" + SYSTEM_WRITER,
-                    user_writer(entry, payload, research_md, analysis_md, synthesis_md, critic_md))
-
-    push("Complete", "Report ready.", 3)
-    return events, final_md
+    if status_cb:
+        status_cb("Finalize", 95, "Final report ready.")
+    return pieces, final_md
