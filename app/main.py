@@ -12,7 +12,11 @@ from fpdf import FPDF
 import os
 from .agents import run_multi_agent
 from dotenv import load_dotenv
+from pathlib import Path
+import unicodedata
+
 load_dotenv("app/.env")
+
 # -----------------------------
 # FastAPI setup
 # -----------------------------
@@ -37,6 +41,9 @@ class Submission(BaseModel):
 JOBS: Dict[str, Dict[str, Any]] = {}
 PDF_DIR = os.path.join("data", "pdf")
 os.makedirs(PDF_DIR, exist_ok=True)
+FONT_DIR = Path(__file__).resolve().parent / "fonts"
+DEJAVU_REG = FONT_DIR / "DejaVuSans.ttf"
+DEJAVU_BOLD = FONT_DIR / "DejaVuSans-Bold.ttf"
 
 # phases (UI progress)
 UI_STEPS = [
@@ -59,22 +66,72 @@ UI_STEPS = [
 def _pdf_path(job_id: str) -> str:
     return os.path.join(PDF_DIR, f"{job_id}.pdf")
 
+def _ascii_sanitize(text: str) -> str:
+    """
+    Fallback: strip non-ASCII so FPDF core fonts won't choke
+    (used only if DejaVu fonts are missing).
+    """
+    if not isinstance(text, str):
+        text = str(text)
+    return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+
+def _use_unicode_fonts(pdf: FPDF) -> bool:
+    """
+    Try to register DejaVu fonts for full Unicode support.
+    Returns True if fonts loaded, else False.
+    """
+    try:
+        if DEJAVU_REG.exists() and DEJAVU_BOLD.exists():
+            pdf.add_font("DejaVu", "", str(DEJAVU_REG), uni=True)
+            pdf.add_font("DejaVu", "B", str(DEJAVU_BOLD), uni=True)
+            return True
+        return False
+    except Exception:
+        return False
+
 def generate_pdf(job_id: str, title: str, report_text: str) -> str:
+    """
+    Unicode-safe PDF writer. Uses DejaVu (if present). Otherwise falls back
+    to ASCII-sanitized text with core fonts so we never hang at 97%.
+    """
+    # Ensure string
+    if report_text is None:
+        report_text = ""
+    if not isinstance(report_text, str):
+        report_text = str(report_text)
+
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=12)
     pdf.add_page()
-    pdf.set_font("Arial", "B", 16)
-    pdf.multi_cell(0, 9, title)
-    pdf.ln(3)
-    pdf.set_font("Arial", "", 11)
 
-    # split long content into lines to avoid encoding issues
-    for line in report_text.splitlines():
-        pdf.multi_cell(0, 6, line)
+    # Try Unicode fonts first
+    has_unicode = _use_unicode_fonts(pdf)
+
+    if has_unicode:
+        # Title
+        pdf.set_font("DejaVu", "B", 16)
+        pdf.multi_cell(0, 9, title)
+        pdf.ln(3)
+        # Body
+        pdf.set_font("DejaVu", "", 11)
+        for line in report_text.splitlines():
+            pdf.multi_cell(0, 6, line if isinstance(line, str) else str(line))
+    else:
+        # Fallback: sanitize to ASCII and use core fonts
+        safe_title = _ascii_sanitize(title)
+        safe_body = "\n".join(_ascii_sanitize(line) for line in report_text.splitlines())
+
+        pdf.set_font("Arial", "B", 16)
+        pdf.multi_cell(0, 9, safe_title)
+        pdf.ln(3)
+        pdf.set_font("Arial", "", 11)
+        for line in safe_body.splitlines():
+            pdf.multi_cell(0, 6, line)
 
     path = _pdf_path(job_id)
     pdf.output(path)
     return path
+
 
 async def _run_pipeline(job_id: str, submission: Submission):
     job = JOBS[job_id]
