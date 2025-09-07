@@ -4,7 +4,13 @@ uvicorn[standard]==0.30.6
 pydantic==2.8.2
 python-dotenv==1.0.1
 fpdf2==2.7.9
+python-dotenv
+httpx
+slowapi
+markdown2
 
 # Gemini (Google Generative AI)
 google-generativeai==0.7.2
 tenacity==8.2.3
+
+
