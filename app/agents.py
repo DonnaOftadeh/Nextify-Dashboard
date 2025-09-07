@@ -7,6 +7,7 @@ from typing import Callable, Dict, List, Tuple
 
 from dotenv import load_dotenv
 load_dotenv("app/.env")
+import google.generativeai as genai
 
 # -----------------------------------------------------------------------------
 # Logging setup (helpful while you're testing)
@@ -19,12 +20,11 @@ logger = logging.getLogger("nextify.agents")
 # -----------------------------------------------------------------------------
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini").lower()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-pro")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 if LLM_PROVIDER == "gemini":
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY not found. Put it in app/.env (do NOT commit).")
-    import google.generativeai as genai
     genai.configure(api_key=GEMINI_API_KEY)
 
 from .templates import get_prompt_bundle
@@ -113,7 +113,7 @@ async def run_multi_agent(
     )
 
     final_report_parts: List[str] = []
-    final_report_parts.append(f"🎯 Nextify v4 Multi-Agent Output Report – {subject}")
+    final_report_parts.append(f"Nextify v4 Multi-Agent Output Report  {subject}")
 
     # Run each "agent" (prompt) in sequence
     for idx, (title, prompt) in enumerate(sections, start=1):
@@ -143,7 +143,7 @@ async def run_multi_agent(
         # Extremely unlikely with the fallback guards,
         # but just in case, return a helpful placeholder.
         report_text = (
-            "⚠️ Agents produced empty output.\n\n"
+            "Agents produced empty output.\n\n"
             "Please verify your API key, model settings, and prompt templates."
         )
 

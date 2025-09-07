@@ -14,22 +14,24 @@ from pathlib import Path
 import unicodedata
 
 from dotenv import load_dotenv
-load_dotenv("app/.env")
+load_dotenv("app/.env")  # read LLM_PROVIDER / GEMINI_* from app/.env
 
 from .agents import run_multi_agent
+
 
 # -----------------------------
 # FastAPI setup
 # -----------------------------
-app = FastAPI(title="Nextify Backend (Gemini)")
+app = FastAPI(title="Nextify Backend (Gemini 2.0 Flash)")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tighten later
+    allow_origins=["*"],  # tighten later (e.g., your GH Pages origin)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # -----------------------------
 # In-memory job store (MVP)
@@ -39,6 +41,7 @@ class Submission(BaseModel):
     journey_type: str = Field(..., pattern="^(company|industry|product|idea)$")
     payload: Dict[str, Any] = Field(..., description="Raw form fields from the page")
 
+
 JOBS: Dict[str, Dict[str, Any]] = {}
 PDF_DIR = os.path.join("data", "pdf")
 os.makedirs(PDF_DIR, exist_ok=True)
@@ -46,6 +49,7 @@ os.makedirs(PDF_DIR, exist_ok=True)
 FONT_DIR = Path(__file__).resolve().parent / "fonts"
 DEJAVU_REG = FONT_DIR / "DejaVuSans.ttf"
 DEJAVU_BOLD = FONT_DIR / "DejaVuSans-Bold.ttf"
+
 
 # phases (UI progress)
 UI_STEPS = [
@@ -62,8 +66,9 @@ UI_STEPS = [
     "The Pensive (v2)",
     "The Sorting Hat",
     "The Story Weaver",
-    "Write Report (PDF)"
+    "Write Report (PDF)",
 ]
+
 
 # -----------------------------
 # Helpers (PDF + wrapping)
@@ -71,17 +76,20 @@ UI_STEPS = [
 def _pdf_path(job_id: str) -> str:
     return os.path.join(PDF_DIR, f"{job_id}.pdf")
 
+
 def _ascii_sanitize(text: str) -> str:
     """Fallback: strip non-ASCII so FPDF core fonts won't choke (when no DejaVu)."""
     if not isinstance(text, str):
         text = str(text)
     return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
 
+
 def _chunk_long_token(tok: str, limit: int = 120) -> str:
     """Insert soft breaks into very long unbroken tokens so FPDF can wrap them."""
     if len(tok) <= limit:
         return tok
-    return " ".join(tok[i:i+limit] for i in range(0, len(tok), limit))
+    return " ".join(tok[i : i + limit] for i in range(0, len(tok), limit))
+
 
 def _soft_wrap_line(s: str, limit: int = 120) -> str:
     """Break any very-long 'word' (no spaces) into chunks; keep normal words as-is."""
@@ -90,6 +98,7 @@ def _soft_wrap_line(s: str, limit: int = 120) -> str:
     tokens = s.split(" ")
     tokens = [_chunk_long_token(t, limit) for t in tokens]
     return " ".join(tokens)
+
 
 def _use_unicode_fonts(pdf: FPDF) -> bool:
     """
@@ -105,10 +114,12 @@ def _use_unicode_fonts(pdf: FPDF) -> bool:
     except Exception:
         return False
 
+
 def generate_pdf(job_id: str, title: str, report_text: str) -> str:
     """
     Unicode-safe PDF writer. Uses DejaVu (if present). Otherwise falls back
-    to ASCII-sanitized text with core fonts.
+    to ASCII-sanitized text with core fonts and soft-wraps long tokens to
+    prevent FPDF's 'Not enough horizontal space' error.
     """
     if not isinstance(report_text, str) or not report_text.strip():
         report_text = (
@@ -130,6 +141,7 @@ def generate_pdf(job_id: str, title: str, report_text: str) -> str:
         pdf.set_font("DejaVu", "", 11)
         for line in report_text.splitlines():
             line = line if isinstance(line, str) else str(line)
+            # guard against pathological long lines
             if len(line) > 8000:
                 line = line[:8000] + " …(truncated)"
             line = _soft_wrap_line(line, 120)
@@ -140,8 +152,8 @@ def generate_pdf(job_id: str, title: str, report_text: str) -> str:
         pdf.multi_cell(0, 9, _soft_wrap_line(safe_title, 120))
         pdf.ln(3)
         pdf.set_font("Arial", "", 11)
-        for line in report_text.splitlines():
-            line = _ascii_sanitize(line if isinstance(line, str) else str(line))
+        for raw in report_text.splitlines():
+            line = _ascii_sanitize(raw if isinstance(raw, str) else str(raw))
             if len(line) > 8000:
                 line = line[:8000] + " …(truncated)"
             line = _soft_wrap_line(line, 120)
@@ -150,6 +162,7 @@ def generate_pdf(job_id: str, title: str, report_text: str) -> str:
     path = _pdf_path(job_id)
     pdf.output(path)
     return path
+
 
 # -----------------------------
 # Pipeline
@@ -174,7 +187,6 @@ async def _run_pipeline(job_id: str, submission: Submission):
 
         # progress callback from agents.py
         def cb(idx: int, section_title: str, message: str):
-            # Update UI step and progress (spread across the agent phases)
             job["step"] = section_title
             job["progress"] = min(6 + int(idx * (90 / 11)), 95)
             job["message"] = message
@@ -190,12 +202,14 @@ async def _run_pipeline(job_id: str, submission: Submission):
         await asyncio.sleep(0.2)
 
         # pick a nice title
-        subject = (submission.payload.get("bench_company")
-                   or submission.payload.get("company_name")
-                   or submission.payload.get("industry")
-                   or submission.payload.get("product_name")
-                   or submission.payload.get("idea_text")
-                   or "Nextify Report")
+        subject = (
+            submission.payload.get("bench_company")
+            or submission.payload.get("company_name")
+            or submission.payload.get("industry")
+            or submission.payload.get("product_name")
+            or submission.payload.get("idea_text")
+            or "Nextify Report"
+        )
         title = f"Nextify — {submission.journey_type.capitalize()} Report — {subject}"
 
         pdf_path = generate_pdf(job_id, title, report_text)
@@ -211,7 +225,10 @@ async def _run_pipeline(job_id: str, submission: Submission):
         job["step"] = "Error"
         job["message"] = f"Pipeline error: {e}"
         job["progress"] = 100
-        import traceback; traceback.print_exc()
+        import traceback
+
+        traceback.print_exc()
+
 
 # -----------------------------
 # API endpoints
@@ -219,10 +236,10 @@ async def _run_pipeline(job_id: str, submission: Submission):
 @app.post("/api/submit")
 async def submit(submission: Submission):
     try:
-        print("SUBMIT received:", {
-            "journey_type": submission.journey_type,
-            "payload_keys": list(submission.payload.keys())
-        })
+        print(
+            "SUBMIT received:",
+            {"journey_type": submission.journey_type, "payload_keys": list(submission.payload.keys())},
+        )
 
         job_id = str(uuid.uuid4())
         JOBS[job_id] = {
@@ -233,12 +250,13 @@ async def submit(submission: Submission):
             "message": "Job queued.",
             "pdf_path": None,
             "journey_type": submission.journey_type,
-            "raw_report": ""
+            "raw_report": "",
         }
         asyncio.create_task(_run_pipeline(job_id, submission))
         return {"job_id": job_id}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"/api/submit error: {e}")
+
 
 @app.get("/api/status/{job_id}")
 async def status(job_id: str):
@@ -254,6 +272,7 @@ async def status(job_id: str):
         "ready": job["status"] == "done",
     }
 
+
 @app.get("/api/result/{job_id}")
 async def result(job_id: str):
     job = JOBS.get(job_id)
@@ -262,6 +281,7 @@ async def result(job_id: str):
     if job["status"] != "done" or not job["pdf_path"]:
         return JSONResponse({"error": "Result not ready"}, status_code=202)
     return FileResponse(job["pdf_path"], media_type="application/pdf", filename=f"{job_id}.pdf")
+
 
 @app.get("/api/debug/{job_id}/raw")
 async def debug_raw(job_id: str):
@@ -273,6 +293,7 @@ async def debug_raw(job_id: str):
         raw = "(no raw report stored)"
     return PlainTextResponse(raw)
 
+
 @app.get("/")
 async def root():
-    return {"ok": True, "service": "Nextify Backend (Gemini)"}
+    return {"ok": True, "service": "Nextify Backend (Gemini 2.0 Flash)"}
