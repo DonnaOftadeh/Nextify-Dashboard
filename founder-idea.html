@@ -1,118 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Nextify • Founder — Idea</title>
-  <script>
-    // Use your current ngrok https URL:
-    window.NEXTIFY_API_BASE = "https://2b14bd5555af.ngrok-free.app";
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <style> body { font-family: 'Inter', sans-serif; } </style>
-</head>
-<body class="bg-gray-50">
-  <nav class="bg-white shadow-sm">
-    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-      <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
-      <div class="flex items-center gap-3">
-        <span id="apiBadge" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">API: —</span>
-        <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-blue-600">← Back</a>
-      </div>
-    </div>
-  </nav>
+<script>
+  // ==== CONFIG: set to your current ngrok https URL ====
+  const NEXTIFY_API_BASE = "https://2b14bd5555af.ngrok-free.app";
 
-  <main class="max-w-5xl mx-auto px-4 py-10">
-    <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">Start with your Idea</h1>
-    <p class="text-gray-600 mb-6">Tell us your idea, we’ll generate a structured innovation report.</p>
+  // Optional connectivity check (no UI changes)
+  (async () => {
+    try { await fetch(`${NEXTIFY_API_BASE}/`, { cache: "no-store" }); }
+    catch (e) { console.warn("API not reachable:", e); }
+  })();
 
-    <form id="ideaForm" action="" novalidate class="bg-white rounded-2xl shadow p-6 space-y-6">
-      <div>
-        <label class="block text-sm font-semibold">Idea title</label>
-        <input name="idea_title" type="text" required class="w-full rounded-lg border-gray-300" placeholder="Global Innovation Platform">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold">Current stage</label>
-        <select name="current_stage" class="w-full rounded-lg border-gray-300">
-          <option>Idea</option><option>Prototype</option><option>Beta</option><option>Launched</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold">Problem</label>
-        <textarea name="problem" rows="3" class="w-full rounded-lg border-gray-300"></textarea>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold">Target users</label>
-        <input name="target_users" type="text" class="w-full rounded-lg border-gray-300">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold">Constraints</label>
-        <input name="constraints" type="text" class="w-full rounded-lg border-gray-300">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold">Region</label>
-        <input name="region" type="text" class="w-full rounded-lg border-gray-300" value="Global">
-      </div>
+  // Attach submit handler to your existing form (by id or use document.forms[0])
+  (function () {
+    // If your form has an id, set it here. Otherwise the first form is used.
+    const form = document.getElementById("idea-form") || document.forms[0];
+    if (!form) return console.error("Idea form not found.");
 
-      <div class="flex items-center gap-3">
-        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700">
-          Submit & Continue
-        </button>
-        <span id="submitMsg" class="text-sm text-gray-600"></span>
-      </div>
-    </form>
-  </main>
+    form.addEventListener("submit", async (ev) => {
+      // If your original form already posts somewhere, remove that action to avoid double navigation.
+      ev.preventDefault();
 
-  <script>
-    const API = window.NEXTIFY_API_BASE;
+      // Read fields by their existing name attributes (keep your current names!)
+      const fd = new FormData(form);
 
-    // connectivity badge
-    (async () => {
-      const badge = document.getElementById("apiBadge");
-      try {
-        const r = await fetch(`${API}/`, { cache: "no-store" });
-        if (!r.ok) throw 0;
-        badge.textContent = "API: Connected ✅";
-        badge.className = "text-xs px-2 py-1 rounded bg-green-100 text-green-800";
-      } catch {
-        badge.textContent = "API: Not reachable ❌";
-        badge.className = "text-xs px-2 py-1 rounded bg-rose-100 text-rose-700";
-      }
-    })();
-
-    document.getElementById("ideaForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const f = e.currentTarget;
-      const msg = document.getElementById("submitMsg");
-
-      const body = {
-        journey_type: "idea",
-        payload: {
-          idea_title:    f.idea_title.value.trim(),
-          current_stage: f.current_stage.value.trim(),
-          problem:       f.problem.value.trim(),
-          target_users:  f.target_users.value.trim(),
-          constraints:   f.constraints.value.trim(),
-          region:        (f.region.value || "Global").trim()
-        }
+      const payload = {
+        idea_title:    (fd.get("idea_title")    || "").toString().trim(),
+        current_stage: (fd.get("current_stage") || "").toString().trim(),
+        problem:       (fd.get("problem")       || "").toString().trim(),
+        target_users:  (fd.get("target_users")  || "").toString().trim(),
+        constraints:   (fd.get("constraints")   || "").toString().trim(),
+        region:        (fd.get("region")        || "Global").toString().trim()
       };
 
+      // Build the body exactly as backend expects
+      const body = { journey_type: "idea", payload };
+
+      // Optional: show lightweight busy state (no CSS changes)
+      const submitBtn = form.querySelector('[type="submit"]');
+      const oldTxt = submitBtn ? submitBtn.textContent : "";
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Submitting…"; }
+
       try {
-        msg.textContent = "Submitting…";
-        const resp = await fetch(`${API}/api/submit`, {
+        const resp = await fetch(`${NEXTIFY_API_BASE}/api/submit`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body)
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+
+        // Navigate to your existing processing page (unchanged)
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (err) {
-        msg.textContent = "";
-        alert("Submit failed: " + err.message + "\n\nCheck ngrok URL and CORS.");
+        alert("Submit failed. Please check the API URL / ngrok / CORS.\n\n" + err.message);
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = oldTxt; }
       }
-    });
-  </script>
-</body>
-</html>
+    }, { passive: false });
+  })();
+</script>
