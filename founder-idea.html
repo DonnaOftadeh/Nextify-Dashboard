@@ -4,6 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Nextify • Founder — Idea</title>
+  <script>
+    // Use your current ngrok https URL:
+    window.NEXTIFY_API_BASE = "https://2b14bd5555af.ngrok-free.app";
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style> body { font-family: 'Inter', sans-serif; } </style>
@@ -12,7 +16,10 @@
   <nav class="bg-white shadow-sm">
     <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
       <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
-      <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-blue-600">← Back</a>
+      <div class="flex items-center gap-3">
+        <span id="apiBadge" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">API: —</span>
+        <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-blue-600">← Back</a>
+      </div>
     </div>
   </nav>
 
@@ -20,7 +27,7 @@
     <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">Start with your Idea</h1>
     <p class="text-gray-600 mb-6">Tell us your idea, we’ll generate a structured innovation report.</p>
 
-    <form id="ideaForm" class="bg-white rounded-2xl shadow p-6 space-y-6">
+    <form id="ideaForm" action="" novalidate class="bg-white rounded-2xl shadow p-6 space-y-6">
       <div>
         <label class="block text-sm font-semibold">Idea title</label>
         <input name="idea_title" type="text" required class="w-full rounded-lg border-gray-300" placeholder="Global Innovation Platform">
@@ -47,40 +54,63 @@
         <label class="block text-sm font-semibold">Region</label>
         <input name="region" type="text" class="w-full rounded-lg border-gray-300" value="Global">
       </div>
-      <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700">
-        Submit & Continue
-      </button>
-      <span id="submitMsg" class="text-sm text-gray-600 ml-3"></span>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700">
+          Submit & Continue
+        </button>
+        <span id="submitMsg" class="text-sm text-gray-600"></span>
+      </div>
     </form>
   </main>
 
   <script>
-    const API_BASE = "http://127.0.0.1:8000"; // change to your deployed FastAPI URL with https
+    const API = window.NEXTIFY_API_BASE;
+
+    // connectivity badge
+    (async () => {
+      const badge = document.getElementById("apiBadge");
+      try {
+        const r = await fetch(`${API}/`, { cache: "no-store" });
+        if (!r.ok) throw 0;
+        badge.textContent = "API: Connected ✅";
+        badge.className = "text-xs px-2 py-1 rounded bg-green-100 text-green-800";
+      } catch {
+        badge.textContent = "API: Not reachable ❌";
+        badge.className = "text-xs px-2 py-1 rounded bg-rose-100 text-rose-700";
+      }
+    })();
 
     document.getElementById("ideaForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const f = e.target;
+      const f = e.currentTarget;
+      const msg = document.getElementById("submitMsg");
+
       const body = {
         journey_type: "idea",
         payload: {
-          idea_title: f.idea_title.value,
-          current_stage: f.current_stage.value,
-          problem: f.problem.value,
-          target_users: f.target_users.value,
-          constraints: f.constraints.value,
-          region: f.region.value || "Global"
+          idea_title:    f.idea_title.value.trim(),
+          current_stage: f.current_stage.value.trim(),
+          problem:       f.problem.value.trim(),
+          target_users:  f.target_users.value.trim(),
+          constraints:   f.constraints.value.trim(),
+          region:        (f.region.value || "Global").trim()
         }
       };
-      document.getElementById("submitMsg").textContent = "Submitting…";
+
       try {
-        const resp = await fetch(`${API_BASE}/api/submit`, {
-          method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body)
+        msg.textContent = "Submitting…";
+        const resp = await fetch(`${API}/api/submit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
         });
         const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || resp.status);
+        if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (err) {
-        alert("Error: " + err.message);
+        msg.textContent = "";
+        alert("Submit failed: " + err.message + "\n\nCheck ngrok URL and CORS.");
       }
     });
   </script>
