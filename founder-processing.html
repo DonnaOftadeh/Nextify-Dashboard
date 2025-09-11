@@ -1,193 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nextify • Founder – Processing</title>
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Nextify • Processing</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    body { font-family: 'Inter', sans-serif; }
     .pulse { animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
-    .step-dot { width: 10px; height: 10px; }
+    @keyframes pulse {0%,100%{opacity:1}50%{opacity:.6}}
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
   <header class="bg-white shadow-sm">
-    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
       <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
-      <a href="roles.html" class="text-sm text-gray-600 hover:text-blue-600">← Back to roles</a>
+      <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-blue-600">← Back</a>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-8 md:py-10">
-    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Running your analysis</h1>
-    <p id="company-line" class="text-gray-600 mt-2">Benchmark: <span class="font-semibold text-gray-900" id="benchCompanyText"></span></p>
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-900">Running your analysis</h1>
+    <p id="jobTag" class="text-sm text-gray-600 mt-1">Job: —</p>
 
-    <!-- Status card -->
-    <section class="mt-6 bg-white rounded-2xl shadow p-6 md:p-8">
-      <!-- Linear progress -->
-      <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-        <div id="progressBar" class="h-2 bg-blue-600 rounded-full" style="width: 0%;"></div>
+    <section class="mt-6 bg-white rounded-2xl shadow p-6">
+      <div class="w-full bg-gray-100 rounded-full h-2">
+        <div id="progressBar" class="h-2 bg-blue-600 rounded-full" style="width:0%"></div>
       </div>
-
-      <!-- Steps list -->
-      <div class="mt-6 space-y-4" id="stepsList">
-        <!-- Steps are injected here -->
+      <div class="mt-4 flex justify-between">
+        <div><div id="statusText" class="text-sm font-semibold">Status: —</div><div id="stepText" class="text-sm text-gray-600">Step: —</div></div>
+        <div id="pct" class="text-xs text-gray-500">0%</div>
       </div>
+      <div class="mt-6 space-y-3" id="stepsList"></div>
 
-      <!-- Live log -->
       <div class="mt-6">
         <h3 class="text-sm font-semibold text-gray-800">Activity</h3>
-        <div id="log" class="mt-2 h-40 overflow-auto bg-gray-50 rounded-lg border border-gray-200 p-3 text-sm text-gray-700"></div>
+        <div id="log" class="mt-2 h-40 overflow-auto bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs"></div>
       </div>
 
-      <!-- Results -->
-      <div class="mt-8 grid gap-4 md:grid-cols-2">
-        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-          <h4 class="font-semibold text-gray-900 mb-2">Report (PDF)</h4>
-          <p class="text-sm text-gray-600">A downloadable report will appear here when ready.</p>
-          <a id="pdfLink"
-             href="#"
-             class="mt-3 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gray-200 text-gray-700 cursor-not-allowed">
-            <span class="mr-2">⬇️</span> Report not ready
-          </a>
-        </div>
-        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-          <h4 class="font-semibold text-gray-900 mb-2">Audio Summary</h4>
-          <p class="text-sm text-gray-600">We’ll generate a spoken summary when analysis completes.</p>
-          <audio id="audioPlayer" class="mt-3 w-full" controls disabled></audio>
-        </div>
-      </div>
-
-      <!-- Controls -->
-      <div class="mt-8 flex items-center gap-3">
-        <button id="cancelBtn"
-                class="px-5 py-2.5 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">
-          Cancel
-        </button>
-        <button id="restartBtn"
-                class="px-5 py-2.5 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700">
-          Restart
+      <div class="mt-6">
+        <button id="downloadBtn" class="px-5 py-2 rounded-full bg-gray-200 text-gray-600 cursor-not-allowed" disabled>
+          Report not ready
         </button>
       </div>
     </section>
-
-    <p class="text-xs text-gray-500 mt-4">
-      Note: this page is currently simulating progress. In the next step we’ll connect it to your agent backend and stream real statuses.
-    </p>
   </main>
 
   <script>
-    // --- Read query param
-    const params = new URLSearchParams(location.search);
-    const benchCompany = params.get('bench_company') || 'Spotify';
-    document.getElementById('benchCompanyText').textContent = benchCompany;
-
-    // --- Step model (matches your multi-agent phases we’ll wire later)
-    const steps = [
-      { key: 'intake',        label: 'Intake & Context Setup' },
-      { key: 'market',        label: 'Market & Trend Scan' },
-      { key: 'competitors',   label: 'Competitor Benchmarking' },
-      { key: 'ideation',      label: 'Opportunity & Ideation' },
-      { key: 'roadmap',       label: 'Strategy & Execution Roadmap' },
-      { key: 'report',        label: 'Report & Audio Summary' },
+    const API_BASE = "http://127.0.0.1:8000"; // change for deployment
+    const UI_STEPS = [
+      "Parse Submission","Agent Orchestration","Howler Whisperer","The Marauder",
+      "The Legilimens","The Seer","Room of Requirement (R1)","The Pensive (v1)",
+      "The Headmaster","Room of Requirement (R2)","The Pensive (v2)",
+      "The Sorting Hat","The Story Weaver","Write Report (PDF)"
     ];
+    const job = new URLSearchParams(location.search).get("job");
+    document.getElementById("jobTag").textContent = job ? `Job: ${job}` : "No job id";
 
-    // --- Render steps list
-    const stepsList = document.getElementById('stepsList');
-    steps.forEach((s, i) => {
-      const row = document.createElement('div');
-      row.id = `row-${s.key}`;
-      row.className = 'flex items-start gap-3';
-      row.innerHTML = `
-        <div class="mt-1 step-dot rounded-full bg-gray-300" id="dot-${s.key}"></div>
-        <div class="flex-1">
-          <div class="flex items-center justify-between">
-            <p class="font-semibold text-gray-900">${i+1}. ${s.label}</p>
-            <span id="badge-${s.key}" class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200">Queued</span>
-          </div>
-          <p id="desc-${s.key}" class="text-sm text-gray-600 mt-1"></p>
-        </div>
-      `;
-      stepsList.appendChild(row);
-    });
+    const stepsList = document.getElementById("stepsList");
+    UI_STEPS.forEach((s,i)=>{const row=document.createElement("div");row.textContent=`${i+1}. ${s}`;row.id="row-"+s;stepsList.appendChild(row);});
 
-    // --- Helpers
-    const progressBar = document.getElementById('progressBar');
-    const logEl = document.getElementById('log');
-    function setStepState(key, state, msg='') {
-      const dot = document.getElementById(`dot-${key}`);
-      const badge = document.getElementById(`badge-${key}`);
-      const desc = document.getElementById(`desc-${key}`);
-
-      const styles = {
-        queued:  { dot: 'bg-gray-300',     badge: 'bg-gray-100 text-gray-700 border border-gray-200', text: 'Queued' },
-        running: { dot: 'bg-blue-500 pulse', badge: 'bg-blue-100 text-blue-800 border border-blue-200', text: 'Running' },
-        done:    { dot: 'bg-green-500',    badge: 'bg-green-100 text-green-800 border border-green-200', text: 'Done' },
-        error:   { dot: 'bg-red-500',      badge: 'bg-red-100 text-red-800 border border-red-200', text: 'Error' },
-      };
-
-      // reset classes
-      dot.className = 'mt-1 step-dot rounded-full ' + styles[state].dot;
-      badge.className = 'text-xs px-2 py-0.5 rounded-full ' + styles[state].badge;
-      badge.textContent = styles[state].text;
-      desc.textContent = msg || '';
-    }
-    function log(line) {
-      const time = new Date().toLocaleTimeString();
-      logEl.insertAdjacentHTML('beforeend', `<div><span class="text-gray-400">${time}</span> — ${line}</div>`);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-    function setProgress(pct) {
-      progressBar.style.width = `${pct}%`;
-    }
-
-    // --- Simulate (will be replaced with real-time events from your backend)
-    async function simulateRun() {
-      const total = steps.length;
-      for (let i = 0; i < total; i++) {
-        const s = steps[i];
-        setStepState(s.key, 'running', `Starting ${s.label}…`);
-        log(`Agent entered: ${s.label}`);
-
-        // fake work
-        await new Promise(r => setTimeout(r, 1200 + Math.random()*800));
-
-        setStepState(s.key, 'done', `${s.label} completed.`);
-        setProgress(Math.round(((i+1)/total)*100));
+    async function poll() {
+      if (!job) return;
+      while(true){
+        const r=await fetch(`${API_BASE}/api/status/${job}`);const s=await r.json();
+        document.getElementById("statusText").textContent=`Status: ${s.status}`;
+        document.getElementById("stepText").textContent=`Step: ${s.step}`;
+        document.getElementById("pct").textContent=`${s.progress}%`;
+        document.getElementById("progressBar").style.width=`${s.progress}%`;
+        if(s.message){document.getElementById("log").innerHTML+=`<div>${s.step}: ${s.message}</div>`;}
+        if(s.ready){const btn=document.getElementById("downloadBtn");btn.disabled=false;btn.textContent="⬇️ Download PDF";btn.className="px-5 py-2 rounded-full bg-blue-600 text-white";btn.onclick=()=>window.open(`${API_BASE}/api/result/${job}`,"_blank");break;}
+        if(s.status==="failed"){document.getElementById("downloadBtn").textContent="Failed";break;}
+        await new Promise(res=>setTimeout(res,1500));
       }
-
-      // enable results
-      const pdfLink = document.getElementById('pdfLink');
-      pdfLink.textContent = 'Download Report (PDF)';
-      pdfLink.className = 'mt-3 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700';
-      pdfLink.href = '#'; // next step: set to real file URL from backend
-
-      const audio = document.getElementById('audioPlayer');
-      audio.removeAttribute('disabled');
-      // audio.src = '...'; // next step: set to real audio URL from backend
-      log('Packaging results: PDF + audio summary ready.');
     }
-
-    // Controls
-    document.getElementById('cancelBtn').addEventListener('click', () => {
-      if (confirm('Cancel the run and go back to the role selection?')) {
-        location.href = 'roles.html';
-      }
-    });
-    document.getElementById('restartBtn').addEventListener('click', () => {
-      // reset
-      setProgress(0);
-      steps.forEach(s => setStepState(s.key, 'queued', ''));
-      log('Restart requested.');
-      simulateRun();
-    });
-
-    // Kick off
-    simulateRun();
+    poll();
   </script>
 </body>
 </html>
