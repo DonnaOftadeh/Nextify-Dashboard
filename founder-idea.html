@@ -4,14 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nextify — Start with your Idea</title>
-  <!-- Keep your existing CSS links here if you have them -->
   <style>
-    /* Minimal, non-invasive defaults. Remove if you already have CSS. */
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#fff; color:#111; }
     .container { max-width: 1040px; margin: 0 auto; padding: 24px; }
     h1 { font-weight: 700; margin: 0 0 8px; }
     .sub { color:#555; margin: 0 0 24px; }
     form label { display:block; font-weight:600; margin:18px 0 8px; }
+    form label .req { color:red; margin-left:3px; }
     input[type="text"], textarea, select {
       width:100%; padding:14px 12px; border-radius:10px; border:1px solid #d0d7de; font-size:16px; background:#fff;
     }
@@ -34,12 +33,11 @@
     <h1>Start with your Idea</h1>
     <p class="sub">Tell us your idea; we’ll generate a structured innovation report.</p>
 
-    <!-- Keep your original field names -->
     <form id="idea-form">
-      <label for="idea_title">Idea title *</label>
+      <label for="idea_title">Idea title<span class="req">*</span></label>
       <input type="text" id="idea_title" name="idea_title" placeholder="e.g., Global Innovation Platform" required />
 
-      <label for="current_stage">Current stage *</label>
+      <label for="current_stage">Current stage<span class="req">*</span></label>
       <select id="current_stage" name="current_stage" required>
         <option value="" selected>Choose a stage...</option>
         <option value="Idea">Idea</option>
@@ -48,10 +46,10 @@
         <option value="Growth">Growth</option>
       </select>
 
-      <label for="problem">What problem does it solve? *</label>
+      <label for="problem">What problem does it solve?<span class="req">*</span></label>
       <textarea id="problem" name="problem" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented." required></textarea>
 
-      <label for="target_users">Who is it for? *</label>
+      <label for="target_users">Who is it for?<span class="req">*</span></label>
       <input type="text" id="target_users" name="target_users" placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
 
       <label for="constraints">Constraints (optional)</label>
@@ -66,10 +64,8 @@
     </form>
   </div>
 
-  <!-- Backend connector: ONLY logic, no design changes -->
   <script>
   (function () {
-    // Stable ngrok URL (custom domain you shared)
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
     const form = document.getElementById("idea-form");
@@ -77,7 +73,6 @@
 
     function payloadFromForm(formEl) {
       const fd = new FormData(formEl);
-      // Keep your original names
       const base = {
         idea_title:    (fd.get("idea_title")    || "").toString().trim(),
         current_stage: (fd.get("current_stage") || "").toString().trim(),
@@ -86,7 +81,6 @@
         constraints:   (fd.get("constraints")   || "").toString().trim(),
         region:        (fd.get("region")        || "Global").toString().trim()
       };
-      // Also merge any extra fields, just in case
       for (const [k,v] of fd.entries()) {
         if (!(k in base)) base[k] = (v ?? "").toString().trim();
       }
@@ -109,7 +103,7 @@
         if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (e) {
-        alert("Submit failed. Please check that your backend and ngrok are running.\n\n" + e.message);
+        alert("Submit failed. Please check backend/ngrok.\n\n" + e.message);
         btn.disabled = false; btn.textContent = old;
       }
     });
