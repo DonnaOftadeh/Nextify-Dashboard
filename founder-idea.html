@@ -3,69 +3,47 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nextify — Start with your Idea</title>
+  <title>Founder – Submit Idea</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#fff; color:#111; }
-    .container { max-width: 1040px; margin: 0 auto; padding: 24px; }
-    h1 { font-weight: 700; margin: 0 0 8px; }
-    .sub { color:#555; margin: 0 0 24px; }
-    form label { display:block; font-weight:600; margin:18px 0 8px; }
-    form label .req { color:red; margin-left:3px; }
-    input[type="text"], textarea, select {
-      width:100%; padding:14px 12px; border-radius:10px; border:1px solid #d0d7de; font-size:16px; background:#fff;
-    }
-    textarea { min-height: 140px; resize: vertical; }
-    .actions { margin-top: 24px; display:flex; gap:12px; }
-    button { background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:10px; font-size:16px; cursor:pointer; }
-    button[disabled] { opacity:.6; cursor:not-allowed; }
-    .topbar { padding:18px 0; border-bottom:1px solid #eee; }
-    .brand { color:#2563eb; font-weight:800; font-size:22px; letter-spacing:.2px; }
+    /* Only makes the asterisks red */
+    .req { color: red; }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="container">
-      <span class="brand">Nextify</span>
-    </div>
-  </div>
+  <h1>Submit Your Idea</h1>
 
-  <div class="container">
-    <h1>Start with your Idea</h1>
-    <p class="sub">Tell us your idea; we’ll generate a structured innovation report.</p>
+  <form id="idea-form">
+    <label for="idea_title">Idea title <span class="req">*</span></label>
+    <input type="text" id="idea_title" name="idea_title" required />
 
-    <form id="idea-form">
-      <label for="idea_title">Idea title<span class="req">*</span></label>
-      <input type="text" id="idea_title" name="idea_title" placeholder="e.g., Global Innovation Platform" required />
+    <label for="problem">What problem does it solve? <span class="req">*</span></label>
+    <textarea id="problem" name="problem" required></textarea>
 
-      <label for="current_stage">Current stage<span class="req">*</span></label>
-      <select id="current_stage" name="current_stage" required>
-        <option value="" selected>Choose a stage...</option>
-        <option value="Idea">Idea</option>
-        <option value="Prototype">Prototype</option>
-        <option value="MVP">MVP</option>
-        <option value="Growth">Growth</option>
-      </select>
+    <label for="target_users">Who is it for? <span class="req">*</span></label>
+    <input type="text" id="target_users" name="target_users" required />
 
-      <label for="problem">What problem does it solve?<span class="req">*</span></label>
-      <textarea id="problem" name="problem" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented." required></textarea>
+    <label for="current_stage">Current stage <span class="req">*</span></label>
+    <select id="current_stage" name="current_stage" required>
+      <option value="">Choose a stage…</option>
+      <option value="Concept">Concept</option>
+      <option value="Prototype">Prototype</option>
+      <option value="MVP">MVP</option>
+      <option value="Growth">Growth</option>
+    </select>
 
-      <label for="target_users">Who is it for?<span class="req">*</span></label>
-      <input type="text" id="target_users" name="target_users" placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
+    <label for="constraints">Constraints (optional)</label>
+    <textarea id="constraints" name="constraints"></textarea>
 
-      <label for="constraints">Constraints (optional)</label>
-      <textarea id="constraints" name="constraints" placeholder="e.g., Solo founder; limited budget; need design help"></textarea>
+    <label for="region">Region</label>
+    <input type="text" id="region" name="region" value="Global" />
 
-      <label for="region">Region</label>
-      <input type="text" id="region" name="region" value="Global" />
-
-      <div class="actions">
-        <button type="submit" id="submitBtn">Continue</button>
-      </div>
-    </form>
-  </div>
+    <button type="submit" id="submitBtn">Submit Idea</button>
+  </form>
 
   <script>
   (function () {
+    // Your ngrok URL (replace when it changes)
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
     const form = document.getElementById("idea-form");
@@ -73,25 +51,23 @@
 
     function payloadFromForm(formEl) {
       const fd = new FormData(formEl);
-      const base = {
-        idea_title:    (fd.get("idea_title")    || "").toString().trim(),
-        current_stage: (fd.get("current_stage") || "").toString().trim(),
-        problem:       (fd.get("problem")       || "").toString().trim(),
-        target_users:  (fd.get("target_users")  || "").toString().trim(),
-        constraints:   (fd.get("constraints")   || "").toString().trim(),
-        region:        (fd.get("region")        || "Global").toString().trim()
+      return {
+        idea_title:    (fd.get("idea_title")    || "").trim(),
+        problem:       (fd.get("problem")       || "").trim(),
+        target_users:  (fd.get("target_users")  || "").trim(),
+        current_stage: (fd.get("current_stage") || "").trim(),
+        constraints:   (fd.get("constraints")   || "").trim(),
+        region:        (fd.get("region")        || "Global").trim()
       };
-      for (const [k,v] of fd.entries()) {
-        if (!(k in base)) base[k] = (v ?? "").toString().trim();
-      }
-      return base;
     }
 
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const body = { journey_type: "idea", payload: payloadFromForm(form) };
-      const old = btn.textContent;
-      btn.disabled = true; btn.textContent = "Submitting…";
+
+      const oldTxt = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Submitting…";
 
       try {
         const resp = await fetch(`${NEXTIFY_API_BASE}/api/submit`, {
@@ -102,9 +78,10 @@
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
-      } catch (e) {
-        alert("Submit failed. Please check backend/ngrok.\n\n" + e.message);
-        btn.disabled = false; btn.textContent = old;
+      } catch (err) {
+        alert("Submit failed.\n\n" + err.message);
+        btn.disabled = false;
+        btn.textContent = oldTxt;
       }
     });
   })();
