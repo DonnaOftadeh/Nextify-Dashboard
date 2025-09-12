@@ -8,110 +8,89 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
   <header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="index.html" class="text-lg font-semibold text-blue-700">Nextify</a>
       <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-gray-800">← Back</a>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-10">
-    <h1 class="text-2xl font-bold text-gray-900 mb-2">Running your analysis</h1>
-    <div id="apiInfo" class="text-xs text-gray-500 mb-6"></div>
+  <main class="max-w-5xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+      <h1 class="text-2xl font-semibold text-gray-900 mb-2">Generating your report…</h1>
+      <p class="text-gray-600 mb-6">This usually takes under a minute.</p>
 
-    <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
-      <div id="bar" class="bg-blue-600 h-2 rounded-full" style="width:0%"></div>
-    </div>
-
-    <div class="mb-4">
-      <div class="text-sm text-gray-700">
-        <b>Status:</b> <span id="status">—</span><br/>
-        <b>Step:</b> <span id="step">—</span>
+      <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden mb-3">
+        <div id="bar" class="h-3 bg-blue-600 transition-all" style="width:0%"></div>
       </div>
-    </div>
+      <div class="flex items-center justify-between text-sm text-gray-600">
+        <div><span id="pct">0</span>%</div>
+        <div id="status">Queued</div>
+      </div>
+      <div class="mt-2 text-sm text-gray-700">Step: <span id="step">—</span></div>
 
-    <!-- The step list (static labels) -->
-    <ol class="list-decimal list-inside text-gray-800 space-y-1 mb-8 text-sm">
-      <li>Parse Submission</li>
-      <li>Agent Orchestration</li>
-      <li>Howler Whisperer</li>
-      <li>The Marauder</li>
-      <li>The Legilimens</li>
-      <li>The Seer</li>
-      <li>Room of Requirement (R1)</li>
-      <li>The Pensive (v1)</li>
-      <li>The Headmaster</li>
-      <li>Room of Requirement (R2)</li>
-      <li>The Pensive (v2)</li>
-      <li>The Sorting Hat</li>
-      <li>The Story Weaver</li>
-      <li>Write Report (PDF)</li>
-    </ol>
-
-    <div class="flex gap-3">
-      <a id="downloadBtn"
-         class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700
-                disabled:opacity-50 disabled:cursor-not-allowed"
-         href="#" download disabled>Download PDF</a>
-      <button id="rawBtn"
-              class="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50">
-        View raw text
-      </button>
+      <div class="mt-8 flex items-center gap-3">
+        <button id="downloadBtn" disabled
+                class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-white disabled:opacity-40">
+          Download PDF
+        </button>
+        <a id="rawBtn" href="#" target="_blank" class="text-sm text-gray-600 hover:underline">View raw output</a>
+      </div>
     </div>
   </main>
 
   <script>
-  (async function () {
-    // Read params
-    const p = new URLSearchParams(location.search);
-    const jobId = p.get("job");
-    let apiBase = p.get("api");
+  (function () {
+    const qs = new URLSearchParams(location.search);
+    const jobId = qs.get("job");
+    let API_BASE = qs.get("api") || localStorage.getItem("NEXTIFY_API_BASE") || "";
 
-    // Ensure API base exists (query > localStorage)
-    if (apiBase && /^https:\/\/.+/.test(apiBase)) {
-      localStorage.setItem("NEXTIFY_API_BASE", apiBase);
-    } else {
-      apiBase = localStorage.getItem("NEXTIFY_API_BASE") || "";
+    if (!jobId) { alert("Missing job id"); return; }
+    if (!/^https:\/\/.+/.test(API_BASE)) {
+      const v = prompt("Enter API base (https):", "https://xxxxx.ngrok-free.app");
+      if (!v || !/^https:\/\/.+/.test(v.trim())) return alert("Need a valid HTTPS URL.");
+      API_BASE = v.trim();
+      localStorage.setItem("NEXTIFY_API_BASE", API_BASE);
     }
 
-    const apiInfo = document.getElementById("apiInfo");
-    apiInfo.textContent = apiBase ? `API: ${apiBase} • job: ${jobId || "(none)"}` : "API not set";
-
-    if (!jobId || !/^https:\/\/.+/.test(apiBase)) {
-      alert("Missing job id or API base."); return;
-    }
-
-    const bar = document.getElementById("bar");
     const statusEl = document.getElementById("status");
     const stepEl = document.getElementById("step");
-    const dl = document.getElementById("downloadBtn");
+    const barEl = document.getElementById("bar");
+    const pctEl = document.getElementById("pct");
+    const dlBtn = document.getElementById("downloadBtn");
     const rawBtn = document.getElementById("rawBtn");
+    rawBtn.href = `${API_BASE}/api/debug/${encodeURIComponent(jobId)}/raw`;
 
     async function poll() {
       try {
-        const r = await fetch(`${apiBase}/api/status/${jobId}`, { cache: "no-store" });
+        const r = await fetch(`${API_BASE}/api/status/${encodeURIComponent(jobId)}`, { cache: "no-store" });
         const s = await r.json();
         statusEl.textContent = `${s.progress}% | ${s.status}`;
-        stepEl.textContent = s.step;
-        bar.style.width = Math.max(0, Math.min(100, s.progress || 0)) + "%";
+        stepEl.textContent = s.step || "";
+        barEl.style.width = Math.max(0, Math.min(100, s.progress || 0)) + "%";
+        pctEl.textContent = s.progress || 0;
 
-        if (s.status === "failed") {
-          alert("Pipeline failed. Please check the server logs."); return;
-        }
-        if (s.ready === true) {
-          dl.removeAttribute("disabled");
-          dl.href = `${apiBase}/api/result/${jobId}`;
+        if (s.status === "failed") { alert("Pipeline failed: " + (s.message||"")); return; }
+        if (s.ready) {
+          dlBtn.disabled = false;
+          dlBtn.onclick = async () => {
+            try {
+              const resp = await fetch(`${API_BASE}/api/result/${encodeURIComponent(jobId)}`);
+              if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+              const blob = await resp.blob();
+              const a = document.createElement("a");
+              const cd = resp.headers.get("Content-Disposition")||"";
+              const m = cd.match(/filename="?([^"]+)"?/i);
+              a.download = m ? m[1] : `report_${jobId}.pdf`;
+              a.href = URL.createObjectURL(blob);
+              document.body.appendChild(a); a.click();
+              URL.revokeObjectURL(a.href); a.remove();
+            } catch (e) { alert("Download failed: " + e.message); }
+          };
           return;
         }
-      } catch (e) {
-        console.warn("poll error", e);
-      }
-      setTimeout(poll, 1500);
+      } catch (e) { console.warn("poll error:", e); }
+      setTimeout(poll, 1200);
     }
-
-    rawBtn.addEventListener("click", () => {
-      window.open(`${apiBase}/api/debug/${jobId}/raw`, "_blank");
-    });
-
     poll();
   })();
   </script>
