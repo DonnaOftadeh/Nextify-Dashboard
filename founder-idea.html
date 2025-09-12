@@ -1,144 +1,201 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nextify — Founder Idea</title>
+  <title>Nextify — Idea</title>
 
+  <!-- Keep visual style in line with other pages -->
   <style>
     :root{
-      --fg:#111827;--muted:#6b7280;--brand:#1f6feb;--border:#d1d5db;--bg:#fff;--danger:#d92d20;
+      --text:#0f172a;        /* slate-900 */
+      --muted:#475569;       /* slate-600 */
+      --border:#e2e8f0;      /* slate-200 */
+      --accent:#2563eb;      /* blue-600 */
+      --bg:#ffffff;
+      --field-h:48px;
+      --radius:10px;
+      --container:880px;
     }
-    body{
-      margin:0;background:var(--bg);color:var(--fg);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-      font-size:15px;line-height:1.5;
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"}
+    .wrap{max-width:var(--container);margin:48px auto 80px;padding:0 24px}
+    h1{font-weight:700;font-size:40px;letter-spacing:-.01em;margin:0 0 8px}
+    .lead{color:var(--muted);margin:0 0 32px}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .grid .span-2{grid-column:1 / -1}
+
+    label{display:block;font-weight:600;margin:0 0 8px}
+    .req{color:#dc2626;margin-left:4px} /* red-600 */
+    input[type="text"], select, textarea{
+      width:100%; height:var(--field-h); padding:12px 14px;
+      border:1px solid var(--border); border-radius:var(--radius);
+      outline:none; background:#fff; color:var(--text);
     }
-    .container{
-      max-width:640px;margin:36px auto;padding:0 16px 56px;
+    textarea{min-height:140px; resize:vertical; line-height:1.6}
+    input:focus, select:focus, textarea:focus{border-color:#93c5fd; box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+
+    .help{display:block; color:var(--muted); font-size:14px; line-height:1.4;
+      /* FIX: add a small breathing room under inputs */
+      margin-top:6px; 
     }
-    h1{font-size:1.35rem;margin:0 0 6px}
-    .lead{color:var(--muted);margin:0 0 18px}
-    form{display:grid;gap:10px}
-    label{display:block;font-weight:600;margin-bottom:2px}
-    .req{color:var(--danger)}
-    input,select,textarea,button{font:inherit;color:inherit}
-    input[type="text"],select,textarea{
-      width:100%;box-sizing:border-box;border:1px solid var(--border);
-      border-radius:6px;padding:8px 10px;background:#fff;
-    }
-    textarea{min-height:80px;resize:vertical}
-    .helper{
-      color:var(--muted);
-      font-size:.88rem;
-      margin-top:4px;       /* ← NEW: space between box and helper text */
-      display:block;
-    }
-    .actions{display:flex;gap:12px;align-items:center;margin-top:8px}
+
+    .actions{margin-top:28px}
     .btn{
-      padding:8px 14px;border-radius:6px;border:1px solid transparent;
-      background:var(--brand);color:#fff;cursor:pointer;font-weight:600;
+      display:inline-flex; align-items:center; justify-content:center;
+      height:46px; padding:0 18px; border-radius:12px; border:0; cursor:pointer;
+      background:var(--accent); color:#fff; font-weight:600; letter-spacing:.01em;
     }
-    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .btn[disabled]{opacity:.5; cursor:default}
+    .note{font-size:13px;color:var(--muted);margin-left:12px}
+
+    .banner{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+    .tag{font-size:12px;color:#64748b;border:1px solid var(--border);padding:6px 10px;border-radius:999px}
+    a.back{color:var(--muted);text-decoration:none}
+    a.back:hover{color:var(--text)}
   </style>
 </head>
 <body>
-  <main class="container">
+  <div class="wrap">
+    <div class="banner">
+      <a class="back" href="roles-founder.html">← Back</a>
+      <span class="tag">Idea</span>
+      <span class="tag" id="apiStatus">API: checking…</span>
+    </div>
+
     <h1>Start with your Idea</h1>
     <p class="lead">Tell us your idea; we’ll generate a structured innovation report.</p>
 
+    <!-- FORM -->
     <form id="idea-form" novalidate>
-      <div>
-        <label for="idea_title">Idea title <span class="req">*</span></label>
-        <input id="idea_title" name="idea_title" type="text"
-               placeholder="e.g., Global Innovation Platform" required />
-      </div>
+      <div class="grid">
+        <div class="span-2">
+          <label for="idea_title">Idea title <span class="req">*</span></label>
+          <input id="idea_title" name="idea_title" type="text" placeholder="e.g., Global Innovation Platform" required />
+        </div>
 
-      <div>
-        <label for="current_stage">Current stage <span class="req">*</span></label>
-        <select id="current_stage" name="current_stage" required>
-          <option value="">Choose a stage…</option>
-          <option value="Idea">Idea</option>
-          <option value="Prototype">Prototype</option>
-          <option value="MVP">MVP</option>
-          <option value="Growth">Growth</option>
-        </select>
-      </div>
+        <div>
+          <label for="current_stage">Current stage <span class="req">*</span></label>
+          <select id="current_stage" name="current_stage" required>
+            <option value="" selected>Choose a stage…</option>
+            <option>Idea</option>
+            <option>Prototype</option>
+            <option>MVP</option>
+            <option>Early users</option>
+            <option>Launched</option>
+          </select>
+        </div>
 
-      <div>
-        <label for="problem">What problem does it solve? <span class="req">*</span></label>
-        <textarea id="problem" name="problem"
-          placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."
-          required></textarea>
-      </div>
+        <div>
+          <label for="region">Region</label>
+          <input id="region" name="region" type="text" value="Global" />
+          <small class="help">Default is Global; you can specify e.g., Berlin, EU, US-East.</small>
+        </div>
 
-      <div>
-        <label for="target_users">Who is it for? <span class="req">*</span></label>
-        <input id="target_users" name="target_users" type="text"
-               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
-      </div>
+        <div class="span-2">
+          <label for="problem">What problem does it solve? <span class="req">*</span></label>
+          <textarea id="problem" name="problem" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented." required></textarea>
+        </div>
 
-      <div>
-        <label for="constraints">Constraints (optional)</label>
-        <textarea id="constraints" name="constraints"
-                  placeholder="e.g., Solo founder; limited budget; need design help"></textarea>
-      </div>
+        <div class="span-2">
+          <label for="target_users">Who is it for? <span class="req">*</span></label>
+          <input id="target_users" name="target_users" type="text" placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
+        </div>
 
-      <div>
-        <label for="region">Region</label>
-        <input id="region" name="region" type="text" value="Global" />
-        <span class="helper">Default is Global; you can specify e.g., Berlin, EU, US-East.</span>
+        <div class="span-2">
+          <label for="constraints">Constraints (optional)</label>
+          <textarea id="constraints" name="constraints" placeholder="e.g., Solo founder, limited budget, needs design help"></textarea>
+        </div>
       </div>
 
       <div class="actions">
-        <button type="submit" id="submitBtn" class="btn">Continue</button>
-        <span id="status" class="helper"></span>
+        <button id="submitBtn" class="btn" type="submit">Submit Idea</button>
+        <span class="note">You’ll be redirected to the progress page.</span>
       </div>
     </form>
-  </main>
+  </div>
 
   <script>
-    (function () {
-      const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    // ====== EDIT THIS WHEN TUNNEL CHANGES ======
+    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    // ===========================================
 
-      const form   = document.getElementById("idea-form");
-      const btn    = document.getElementById("submitBtn");
-      const status = document.getElementById("status");
-
-      function payloadFromForm(f){
-        const fd = new FormData(f);
-        return {
-          idea_title:    (fd.get("idea_title")    || "").toString().trim(),
-          current_stage: (fd.get("current_stage") || "").toString().trim(),
-          problem:       (fd.get("problem")       || "").toString().trim(),
-          target_users:  (fd.get("target_users")  || "").toString().trim(),
-          constraints:   (fd.get("constraints")   || "").toString().trim(),
-          region:        (fd.get("region")        || "Global").toString().trim()
-        };
+    // Quick check + small badge
+    (async () => {
+      const badge = document.getElementById("apiStatus");
+      try {
+        const r = await fetch(`${NEXTIFY_API_BASE}/`, {cache:"no-store"});
+        badge.textContent = r.ok ? "API: connected" : `API: ${r.status}`;
+        if(!r.ok) badge.style.color = "#dc2626";
+      } catch(e) {
+        badge.textContent = "API: not reachable";
+        badge.style.color = "#dc2626";
+        console.warn(e);
       }
+    })();
+
+    // Submit
+    (function () {
+      const form = document.getElementById("idea-form");
+      const btn  = document.getElementById("submitBtn");
 
       form.addEventListener("submit", async (ev) => {
         ev.preventDefault();
-        status.textContent = "";
-        if (!form.reportValidity()) return;
 
-        const body = { journey_type: "idea", payload: payloadFromForm(form) };
-        const old = btn.textContent; btn.disabled = true; btn.textContent = "Submitting…";
+        // Minimal client-side required validation
+        const required = ["idea_title","current_stage","problem","target_users"];
+        for (const id of required) {
+          const el = document.getElementById(id);
+          if (!el.value || !el.value.trim()) {
+            el.focus();
+            el.scrollIntoView({behavior:"smooth",block:"center"});
+            return;
+          }
+        }
+
+        const fd = new FormData(form);
+        const payload = {
+          idea_title   : (fd.get("idea_title")    || "").toString().trim(),
+          current_stage: (fd.get("current_stage") || "").toString().trim(),
+          problem      : (fd.get("problem")       || "").toString().trim(),
+          target_users : (fd.get("target_users")  || "").toString().trim(),
+          constraints  : (fd.get("constraints")   || "").toString().trim(),
+          region       : (fd.get("region")        || "Global").toString().trim()
+        };
+
+        const body = { journey_type:"idea", payload };
+
+        btn.disabled = true;
+        const oldTxt = btn.textContent;
+        btn.textContent = "Submitting…";
 
         try {
           const resp = await fetch(`${NEXTIFY_API_BASE}/api/submit`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
+            method : "POST",
+            headers: {"Content-Type":"application/json"},
+            body   : JSON.stringify(body)
           });
-          const data = await resp.json();
-          if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+
+          // If we get HTML (ngrok landing page), show a helpful error
+          const text = await resp.clone().text();
+          if (text.trim().startsWith("<!DOCTYPE")) {
+            throw new Error("Endpoint returned HTML (likely ngrok landing page). Check the HTTPS URL and that FastAPI is running.");
+          }
+          const data = JSON.parse(text);
+
+          if (!resp.ok) {
+            throw new Error(data.detail || `HTTP ${resp.status}`);
+          }
+          // Navigate to the processing page with job id
           window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
         } catch (err) {
-          status.textContent = "Submit failed. Ensure the backend/ngrok are running.";
-          alert(err.message);
-          btn.disabled = false; btn.textContent = old;
+          alert("Cannot reach backend. Check ngrok and FastAPI are running.\n\n" + err.message);
+          console.error(err);
+          btn.disabled = false;
+          btn.textContent = oldTxt;
         }
-      });
+      }, {passive:false});
     })();
   </script>
 </body>
