@@ -15,11 +15,11 @@
       font-size:15px;line-height:1.5;
     }
     .container{
-      max-width:640px;margin:36px auto;padding:0 16px 56px; /* extra bottom pad so last field isn't hugging the edge */
+      max-width:640px;margin:36px auto;padding:0 16px 56px;
     }
     h1{font-size:1.35rem;margin:0 0 6px}
     .lead{color:var(--muted);margin:0 0 18px}
-    form{display:grid;gap:10px}                 /* tighter vertical rhythm */
+    form{display:grid;gap:10px}
     label{display:block;font-weight:600;margin-bottom:2px}
     .req{color:var(--danger)}
     input,select,textarea,button{font:inherit;color:inherit}
@@ -27,8 +27,13 @@
       width:100%;box-sizing:border-box;border:1px solid var(--border);
       border-radius:6px;padding:8px 10px;background:#fff;
     }
-    textarea{min-height:80px;resize:vertical}   /* a bit shorter by default */
-    .helper{color:var(--muted);font-size:.88rem}
+    textarea{min-height:80px;resize:vertical}
+    .helper{
+      color:var(--muted);
+      font-size:.88rem;
+      margin-top:4px;       /* ← NEW: space between box and helper text */
+      display:block;
+    }
     .actions{display:flex;gap:12px;align-items:center;margin-top:8px}
     .btn{
       padding:8px 14px;border-radius:6px;border:1px solid transparent;
@@ -82,6 +87,7 @@
       <div>
         <label for="region">Region</label>
         <input id="region" name="region" type="text" value="Global" />
+        <span class="helper">Default is Global; you can specify e.g., Berlin, EU, US-East.</span>
       </div>
 
       <div class="actions">
@@ -93,7 +99,6 @@
 
   <script>
     (function () {
-      // Use your ACTIVE ngrok URL (reserved domain)
       const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
       const form   = document.getElementById("idea-form");
