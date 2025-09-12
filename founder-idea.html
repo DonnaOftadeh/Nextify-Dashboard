@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nextify – Idea</title>
-  <!-- Tailwind CDN just like your other pages -->
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -22,9 +22,9 @@
       <p class="text-gray-600 mt-2">Tell us your idea, we’ll generate a structured innovation report.</p>
     </div>
 
-    <!-- card wrapper (no @apply; raw utilities only) -->
     <form id="idea-form" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- idea title -->
         <div class="md:col-span-2">
           <label for="idea_title" class="block text-sm font-medium text-gray-800 mb-1">
             Idea title <span class="text-red-500">*</span>
@@ -35,6 +35,7 @@
                         focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
         </div>
 
+        <!-- current stage -->
         <div>
           <label for="current_stage" class="block text-sm font-medium text-gray-800 mb-1">
             Current stage <span class="text-red-500">*</span>
@@ -50,6 +51,18 @@
           </select>
         </div>
 
+        <!-- region / location -->
+        <div>
+          <label for="region" class="block text-sm font-medium text-gray-800 mb-1">
+            Location / Region <span class="text-red-500">*</span>
+          </label>
+          <input id="region" name="region" type="text" required
+                 placeholder="e.g., Global; Berlin; North America"
+                 class="block w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-gray-900 shadow-sm
+                        focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
+        </div>
+
+        <!-- problem -->
         <div class="md:col-span-2">
           <label for="problem" class="block text-sm font-medium text-gray-800 mb-1">
             What problem does it solve? <span class="text-red-500">*</span>
@@ -60,6 +73,7 @@
                            focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"></textarea>
         </div>
 
+        <!-- target users -->
         <div class="md:col-span-2">
           <label for="target_users" class="block text-sm font-medium text-gray-800 mb-1">
             Who is it for? <span class="text-red-500">*</span>
@@ -70,6 +84,7 @@
                         focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
         </div>
 
+        <!-- constraints -->
         <div class="md:col-span-2">
           <label for="constraints" class="block text-sm font-medium text-gray-800 mb-1">
             Constraints (optional)
@@ -82,6 +97,7 @@
         </div>
       </div>
 
+      <!-- buttons -->
       <div class="flex items-center gap-3 pt-2">
         <a href="roles-founder.html"
            class="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2.5 text-gray-700 hover:bg-gray-50">
@@ -96,7 +112,7 @@
     </form>
   </main>
 
-  <!-- backend wiring (unchanged) -->
+  <!-- backend wiring -->
   <script>
   (function () {
     let NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") || "";
@@ -114,11 +130,9 @@
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
 
-      // serialize current fields exactly
       const fd = new FormData(form);
       const payload = {};
       for (const [k, v] of fd.entries()) payload[k] = (v ?? "").toString().trim();
-      if (!("region" in payload)) payload.region = "Global";
 
       const body = { journey_type: "idea", payload };
 
