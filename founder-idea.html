@@ -6,18 +6,24 @@
   <title>Nextify — Founder Idea</title>
 
   <style>
+    /* Neutral style that matches your other forms */
     :root{
       --fg:#0e0e10; --muted:#6b7280; --brand:#1f6feb; --border:#e5e7eb;
       --bg:#ffffff; --danger:#d92d20;
     }
+    /* Use a conservative, responsive base font so it never looks oversized */
     body{
       margin:0; background:var(--bg); color:var(--fg);
-      font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      font: clamp(14px, 1.6vw, 16px) / 1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
     }
-    .container{max-width:960px; margin:40px auto; padding:0 20px;}
-    h1{font-size:1.8rem; margin:0 0 6px 0}
-    p.lead{color:var(--muted); margin:0 0 28px 0}
-    form{display:grid; gap:18px;}
+    .container{
+      max-width: 760px;           /* narrower than before to avoid “zoomed” feel */
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    h1{font-size:1.6rem; margin:0 0 6px 0}
+    p.lead{color:var(--muted); margin:0 0 24px 0}
+    form{display:grid; gap:16px;}
     label{display:block; font-weight:600; margin-bottom:6px}
     .req{color:var(--danger)} /* red asterisk */
     input, select, textarea, button{font:inherit; color:inherit;}
@@ -27,8 +33,8 @@
       padding:10px 12px; background:#fff;
     }
     textarea{min-height:110px; resize:vertical}
-    .row{display:grid; gap:18px}
-    @media (min-width:720px){
+    .row{display:grid; gap:16px}
+    @media (min-width:700px){
       .row.two{grid-template-columns:1fr 1fr}
     }
     .actions{display:flex; gap:12px; align-items:center}
@@ -93,7 +99,7 @@
 
   <script>
     (function () {
-      // Inserted your ngrok URL here:
+      // Your current ngrok URL:
       const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
       const form = document.getElementById("idea-form");
@@ -130,10 +136,10 @@
           const data = await resp.json();
           if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
 
-          // Navigate to processing page with job id
+          // Go to processing page with job id
           window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
         } catch (err) {
-          status.textContent = "Submit failed. Check ngrok URL and that the backend is running.";
+          status.textContent = "Submit failed. Ensure the backend and ngrok are running.";
           alert(err.message);
           btn.disabled = false; btn.textContent = oldTxt;
         }
