@@ -15,81 +15,115 @@
   </header>
 
   <main class="max-w-5xl mx-auto px-4 py-10">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-      <h1 class="text-2xl font-semibold text-gray-900 mb-2">Generating your report…</h1>
-      <p class="text-gray-600 mb-6">This usually takes under a minute.</p>
+    <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-4">Running your analysis</h1>
 
-      <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden mb-3">
-        <div id="bar" class="h-3 bg-blue-600 transition-all" style="width:0%"></div>
-      </div>
-      <div class="flex items-center justify-between text-sm text-gray-600">
-        <div><span id="pct">0</span>%</div>
-        <div id="status">Queued</div>
-      </div>
-      <div class="mt-2 text-sm text-gray-700">Step: <span id="step">—</span></div>
+    <div class="mb-4 text-sm text-gray-600">
+      <span id="jobSpan" class="font-mono"></span>
+      <button id="setApi" class="ml-3 text-blue-600 hover:underline">Change API base</button>
+    </div>
 
-      <div class="mt-8 flex items-center gap-3">
-        <button id="downloadBtn" disabled
-                class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-white disabled:opacity-40">
-          Download PDF
-        </button>
-        <a id="rawBtn" href="#" target="_blank" class="text-sm text-gray-600 hover:underline">View raw output</a>
-      </div>
+    <!-- progress bar -->
+    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+      <div id="bar" class="bg-blue-600 h-2.5 rounded-full" style="width:0%"></div>
+    </div>
+
+    <div class="text-gray-800 text-sm mb-4">
+      <div>Status: <span id="status">—</span></div>
+      <div>Step: <span id="step">—</span></div>
+      <div>Message: <span id="msg">—</span></div>
+    </div>
+
+    <!-- Steps list (static) -->
+    <ol class="list-decimal list-inside text-gray-800 space-y-2">
+      <li>Parse Submission</li>
+      <li>Agent Orchestration</li>
+      <li>Howler Whisperer</li>
+      <li>The Marauder</li>
+      <li>The Legilimens</li>
+      <li>The Seer</li>
+      <li>Room of Requirement (R1)</li>
+      <li>The Pensive (v1)</li>
+      <li>The Headmaster</li>
+      <li>Room of Requirement (R2)</li>
+      <li>The Pensive (v2)</li>
+      <li>The Sorting Hat</li>
+      <li>The Story Weaver</li>
+      <li>Write Report (PDF)</li>
+    </ol>
+
+    <div class="mt-8 flex gap-3">
+      <a id="dl" class="pointer-events-none opacity-50 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-white">
+        Download PDF
+      </a>
+      <a id="raw" class="pointer-events-none opacity-50 inline-flex items-center justify-center rounded-xl border border-gray-300 px-5 py-2.5 text-gray-700 hover:bg-gray-50">
+        View raw text
+      </a>
     </div>
   </main>
 
   <script>
   (function () {
-    const qs = new URLSearchParams(location.search);
-    const jobId = qs.get("job");
-    let API_BASE = qs.get("api") || localStorage.getItem("NEXTIFY_API_BASE") || "";
-
-    if (!jobId) { alert("Missing job id"); return; }
-    if (!/^https:\/\/.+/.test(API_BASE)) {
-      const v = prompt("Enter API base (https):", "https://xxxxx.ngrok-free.app");
-      if (!v || !/^https:\/\/.+/.test(v.trim())) return alert("Need a valid HTTPS URL.");
-      API_BASE = v.trim();
-      localStorage.setItem("NEXTIFY_API_BASE", API_BASE);
+    function qs(k, d="") {
+      const u = new URL(window.location.href);
+      return u.searchParams.get(k) || d;
     }
+
+    // Job id from query
+    const job = qs("job");
+    document.getElementById("jobSpan").textContent = job ? ("job=" + job) : "No job id";
+    if (!job) return;
+
+    // API base from localStorage (allow override ?api=…)
+    let API = qs("api") || localStorage.getItem("NEXTIFY_API_BASE") || "";
+    if (!/^https:\/\/.+/i.test(API)) {
+      const v = prompt("Enter your API base (ngrok HTTPS):", "https://gilbert-unbridged-rumbly.ngrok-free.app");
+      if (v && /^https:\/\/.+/i.test(v.trim())) {
+        API = v.trim();
+        localStorage.setItem("NEXTIFY_API_BASE", API);
+      }
+    }
+
+    document.getElementById("setApi").addEventListener("click", () => {
+      const v = prompt("Enter your API base (ngrok HTTPS):", API);
+      if (v && /^https:\/\/.+/i.test(v.trim())) {
+        API = v.trim();
+        localStorage.setItem("NEXTIFY_API_BASE", API);
+        alert("Saved.");
+      }
+    });
 
     const statusEl = document.getElementById("status");
     const stepEl = document.getElementById("step");
-    const barEl = document.getElementById("bar");
-    const pctEl = document.getElementById("pct");
-    const dlBtn = document.getElementById("downloadBtn");
-    const rawBtn = document.getElementById("rawBtn");
-    rawBtn.href = `${API_BASE}/api/debug/${encodeURIComponent(jobId)}/raw`;
+    const msgEl = document.getElementById("msg");
+    const bar = document.getElementById("bar");
+    const aDl = document.getElementById("dl");
+    const aRaw = document.getElementById("raw");
 
     async function poll() {
       try {
-        const r = await fetch(`${API_BASE}/api/status/${encodeURIComponent(jobId)}`, { cache: "no-store" });
+        const r = await fetch(`${API}/api/status/${job}`, { cache: "no-store" });
         const s = await r.json();
-        statusEl.textContent = `${s.progress}% | ${s.status}`;
-        stepEl.textContent = s.step || "";
-        barEl.style.width = Math.max(0, Math.min(100, s.progress || 0)) + "%";
-        pctEl.textContent = s.progress || 0;
+        if (!r.ok) throw new Error(s.detail || ("HTTP " + r.status));
 
-        if (s.status === "failed") { alert("Pipeline failed: " + (s.message||"")); return; }
-        if (s.ready) {
-          dlBtn.disabled = false;
-          dlBtn.onclick = async () => {
-            try {
-              const resp = await fetch(`${API_BASE}/api/result/${encodeURIComponent(jobId)}`);
-              if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
-              const blob = await resp.blob();
-              const a = document.createElement("a");
-              const cd = resp.headers.get("Content-Disposition")||"";
-              const m = cd.match(/filename="?([^"]+)"?/i);
-              a.download = m ? m[1] : `report_${jobId}.pdf`;
-              a.href = URL.createObjectURL(blob);
-              document.body.appendChild(a); a.click();
-              URL.revokeObjectURL(a.href); a.remove();
-            } catch (e) { alert("Download failed: " + e.message); }
-          };
+        statusEl.textContent = s.status || "—";
+        stepEl.textContent = s.step || "—";
+        msgEl.textContent = s.message || "—";
+        const pct = Math.max(0, Math.min(100, s.progress || 0));
+        bar.style.width = pct + "%";
+
+        if (s.status === "done") {
+          aDl.href = `${API}/api/result/${job}`; aDl.classList.remove("pointer-events-none", "opacity-50");
+          aRaw.href = `${API}/api/debug/${job}/raw`; aRaw.classList.remove("pointer-events-none", "opacity-50");
+          return; // stop polling
+        }
+        if (s.status === "failed") {
+          alert("Pipeline failed: " + (s.message || "unknown"));
           return;
         }
-      } catch (e) { console.warn("poll error:", e); }
-      setTimeout(poll, 1200);
+      } catch (e) {
+        console.warn("poll error:", e);
+      }
+      setTimeout(poll, 1500);
     }
     poll();
   })();
