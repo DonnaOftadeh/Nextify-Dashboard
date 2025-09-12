@@ -2,78 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nextify – Processing</title>
-  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
-  <div class="max-w-2xl mx-auto py-12 px-4 text-center">
-    <h1 class="text-2xl font-bold mb-6">Running your analysis</h1>
-
-    <div class="w-full bg-gray-200 rounded-full h-4 mb-4">
-      <div id="progressBar" class="bg-blue-600 h-4 rounded-full" style="width: 0%"></div>
+  <header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="index.html" class="text-lg font-semibold text-blue-700">Nextify</a>
+      <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-gray-800">← Back</a>
     </div>
-    <p>Status: <span id="statusText">—</span></p>
-    <p>Step: <span id="stepText">—</span></p>
-    <p><span id="pct">0%</span></p>
+  </header>
 
-    <button id="downloadBtn" disabled class="bg-gray-400 text-white px-6 py-2 rounded mt-6">Download Report</button>
-  </div>
+  <main class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Running your analysis</h1>
+    <div id="apiInfo" class="text-xs text-gray-500 mb-6"></div>
+
+    <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+      <div id="bar" class="bg-blue-600 h-2 rounded-full" style="width:0%"></div>
+    </div>
+
+    <div class="mb-4">
+      <div class="text-sm text-gray-700">
+        <b>Status:</b> <span id="status">—</span><br/>
+        <b>Step:</b> <span id="step">—</span>
+      </div>
+    </div>
+
+    <!-- The step list (static labels) -->
+    <ol class="list-decimal list-inside text-gray-800 space-y-1 mb-8 text-sm">
+      <li>Parse Submission</li>
+      <li>Agent Orchestration</li>
+      <li>Howler Whisperer</li>
+      <li>The Marauder</li>
+      <li>The Legilimens</li>
+      <li>The Seer</li>
+      <li>Room of Requirement (R1)</li>
+      <li>The Pensive (v1)</li>
+      <li>The Headmaster</li>
+      <li>Room of Requirement (R2)</li>
+      <li>The Pensive (v2)</li>
+      <li>The Sorting Hat</li>
+      <li>The Story Weaver</li>
+      <li>Write Report (PDF)</li>
+    </ol>
+
+    <div class="flex gap-3">
+      <a id="downloadBtn"
+         class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700
+                disabled:opacity-50 disabled:cursor-not-allowed"
+         href="#" download disabled>Download PDF</a>
+      <button id="rawBtn"
+              class="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50">
+        View raw text
+      </button>
+    </div>
+  </main>
 
   <script>
   (async function () {
-    let NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") || "";
-    if (!/^https:\/\/.+/.test(NEXTIFY_API_BASE)) {
-      const v = prompt("Enter your API base (ngrok https URL):", "https://xxxxx.ngrok-free.app");
-      if (v && /^https:\/\/.+/.test(v.trim())) {
-        NEXTIFY_API_BASE = v.trim();
-        localStorage.setItem("NEXTIFY_API_BASE", NEXTIFY_API_BASE);
-      } else return;
+    // Read params
+    const p = new URLSearchParams(location.search);
+    const jobId = p.get("job");
+    let apiBase = p.get("api");
+
+    // Ensure API base exists (query > localStorage)
+    if (apiBase && /^https:\/\/.+/.test(apiBase)) {
+      localStorage.setItem("NEXTIFY_API_BASE", apiBase);
+    } else {
+      apiBase = localStorage.getItem("NEXTIFY_API_BASE") || "";
     }
 
-    const q = new URLSearchParams(location.search);
-    const job = q.get("job");
-    if (!job) { console.warn("No job id"); return; }
+    const apiInfo = document.getElementById("apiInfo");
+    apiInfo.textContent = apiBase ? `API: ${apiBase} • job: ${jobId || "(none)"}` : "API not set";
 
-    const progressBar = document.getElementById("progressBar");
-    const statusText  = document.getElementById("statusText");
-    const stepText    = document.getElementById("stepText");
-    const pctText     = document.getElementById("pct");
-    const downloadBtn = document.getElementById("downloadBtn");
-
-    function setPct(n) {
-      const p = Math.max(0, Math.min(100, parseInt(n || 0, 10)));
-      progressBar.style.width = p + "%";
-      pctText.textContent = p + "%";
+    if (!jobId || !/^https:\/\/.+/.test(apiBase)) {
+      alert("Missing job id or API base."); return;
     }
 
-    try {
-      while (true) {
-        const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${encodeURIComponent(job)}`, { cache: "no-store" });
+    const bar = document.getElementById("bar");
+    const statusEl = document.getElementById("status");
+    const stepEl = document.getElementById("step");
+    const dl = document.getElementById("downloadBtn");
+    const rawBtn = document.getElementById("rawBtn");
+
+    async function poll() {
+      try {
+        const r = await fetch(`${apiBase}/api/status/${jobId}`, { cache: "no-store" });
         const s = await r.json();
-        setPct(s.progress);
-        statusText.textContent = s.status || "";
-        stepText.textContent   = s.step   || "";
+        statusEl.textContent = `${s.progress}% | ${s.status}`;
+        stepEl.textContent = s.step;
+        bar.style.width = Math.max(0, Math.min(100, s.progress || 0)) + "%";
 
         if (s.status === "failed") {
-          downloadBtn.disabled = true;
-          downloadBtn.textContent = "Run failed";
-          alert("Pipeline failed: " + (s.message || ""));
-          break;
+          alert("Pipeline failed. Please check the server logs."); return;
         }
-
-        if (s.ready) {
-          const pdfURL = `${NEXTIFY_API_BASE}/api/result/${encodeURIComponent(job)}`;
-          downloadBtn.disabled = false;
-          downloadBtn.textContent = "Download report";
-          downloadBtn.onclick = () => { window.location.href = pdfURL; };
-          break;
+        if (s.ready === true) {
+          dl.removeAttribute("disabled");
+          dl.href = `${apiBase}/api/result/${jobId}`;
+          return;
         }
-        await new Promise(res => setTimeout(res, 1200));
+      } catch (e) {
+        console.warn("poll error", e);
       }
-    } catch (e) {
-      alert("Cannot reach backend.\n\n" + e.message);
+      setTimeout(poll, 1500);
     }
+
+    rawBtn.addEventListener("click", () => {
+      window.open(`${apiBase}/api/debug/${jobId}/raw`, "_blank");
+    });
+
+    poll();
   })();
   </script>
 </body>
