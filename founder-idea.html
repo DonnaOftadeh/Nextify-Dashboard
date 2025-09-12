@@ -6,44 +6,35 @@
   <title>Nextify — Founder Idea</title>
 
   <style>
-    /* Neutral style that matches your other forms */
     :root{
-      --fg:#0e0e10; --muted:#6b7280; --brand:#1f6feb; --border:#e5e7eb;
-      --bg:#ffffff; --danger:#d92d20;
+      --fg:#111827;--muted:#6b7280;--brand:#1f6feb;--border:#d1d5db;--bg:#fff;--danger:#d92d20;
     }
-    /* Use a conservative, responsive base font so it never looks oversized */
     body{
-      margin:0; background:var(--bg); color:var(--fg);
-      font: clamp(14px, 1.6vw, 16px) / 1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      margin:0;background:var(--bg);color:var(--fg);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      font-size:15px;line-height:1.5;
     }
     .container{
-      max-width: 760px;           /* narrower than before to avoid “zoomed” feel */
-      margin: 40px auto;
-      padding: 0 20px;
+      max-width:640px;margin:36px auto;padding:0 16px 56px; /* extra bottom pad so last field isn't hugging the edge */
     }
-    h1{font-size:1.6rem; margin:0 0 6px 0}
-    p.lead{color:var(--muted); margin:0 0 24px 0}
-    form{display:grid; gap:16px;}
-    label{display:block; font-weight:600; margin-bottom:6px}
-    .req{color:var(--danger)} /* red asterisk */
-    input, select, textarea, button{font:inherit; color:inherit;}
-    input[type="text"], select, textarea{
-      width:100%; box-sizing:border-box;
-      border:1px solid var(--border); border-radius:8px;
-      padding:10px 12px; background:#fff;
+    h1{font-size:1.35rem;margin:0 0 6px}
+    .lead{color:var(--muted);margin:0 0 18px}
+    form{display:grid;gap:10px}                 /* tighter vertical rhythm */
+    label{display:block;font-weight:600;margin-bottom:2px}
+    .req{color:var(--danger)}
+    input,select,textarea,button{font:inherit;color:inherit}
+    input[type="text"],select,textarea{
+      width:100%;box-sizing:border-box;border:1px solid var(--border);
+      border-radius:6px;padding:8px 10px;background:#fff;
     }
-    textarea{min-height:110px; resize:vertical}
-    .row{display:grid; gap:16px}
-    @media (min-width:700px){
-      .row.two{grid-template-columns:1fr 1fr}
-    }
-    .actions{display:flex; gap:12px; align-items:center}
+    textarea{min-height:80px;resize:vertical}   /* a bit shorter by default */
+    .helper{color:var(--muted);font-size:.88rem}
+    .actions{display:flex;gap:12px;align-items:center;margin-top:8px}
     .btn{
-      padding:10px 16px; border-radius:8px; border:1px solid transparent;
-      background:var(--brand); color:white; cursor:pointer; font-weight:600;
+      padding:8px 14px;border-radius:6px;border:1px solid transparent;
+      background:var(--brand);color:#fff;cursor:pointer;font-weight:600;
     }
-    .btn:disabled{opacity:.6; cursor:not-allowed}
-    .helper{color:var(--muted); font-size:.92rem; margin-top:-6px}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
   </style>
 </head>
 <body>
@@ -54,40 +45,43 @@
     <form id="idea-form" novalidate>
       <div>
         <label for="idea_title">Idea title <span class="req">*</span></label>
-        <input type="text" id="idea_title" name="idea_title" placeholder="e.g., Global Innovation Platform" required />
+        <input id="idea_title" name="idea_title" type="text"
+               placeholder="e.g., Global Innovation Platform" required />
       </div>
 
-      <div class="row two">
-        <div>
-          <label for="current_stage">Current stage <span class="req">*</span></label>
-          <select id="current_stage" name="current_stage" required>
-            <option value="">Choose a stage…</option>
-            <option value="Idea">Idea</option>
-            <option value="Prototype">Prototype</option>
-            <option value="MVP">MVP</option>
-            <option value="Growth">Growth</option>
-          </select>
-        </div>
-        <div>
-          <label for="region">Region</label>
-          <input type="text" id="region" name="region" value="Global" />
-          <div class="helper">Default is Global; you can specify e.g., Berlin, EU, US-East.</div>
-        </div>
+      <div>
+        <label for="current_stage">Current stage <span class="req">*</span></label>
+        <select id="current_stage" name="current_stage" required>
+          <option value="">Choose a stage…</option>
+          <option value="Idea">Idea</option>
+          <option value="Prototype">Prototype</option>
+          <option value="MVP">MVP</option>
+          <option value="Growth">Growth</option>
+        </select>
       </div>
 
       <div>
         <label for="problem">What problem does it solve? <span class="req">*</span></label>
-        <textarea id="problem" name="problem" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented." required></textarea>
+        <textarea id="problem" name="problem"
+          placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."
+          required></textarea>
       </div>
 
       <div>
         <label for="target_users">Who is it for? <span class="req">*</span></label>
-        <input type="text" id="target_users" name="target_users" placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
+        <input id="target_users" name="target_users" type="text"
+               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
       </div>
 
       <div>
         <label for="constraints">Constraints (optional)</label>
-        <textarea id="constraints" name="constraints" placeholder="e.g., Solo founder; limited budget; need design help"></textarea>
+        <textarea id="constraints" name="constraints"
+                  placeholder="e.g., Solo founder; limited budget; need design help"></textarea>
+      </div>
+
+      <div>
+        <label for="region">Region</label>
+        <input id="region" name="region" type="text" value="Global" />
       </div>
 
       <div class="actions">
@@ -99,15 +93,15 @@
 
   <script>
     (function () {
-      // Your current ngrok URL:
+      // Use your ACTIVE ngrok URL (reserved domain)
       const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
-      const form = document.getElementById("idea-form");
-      const btn  = document.getElementById("submitBtn");
+      const form   = document.getElementById("idea-form");
+      const btn    = document.getElementById("submitBtn");
       const status = document.getElementById("status");
 
-      function payloadFromForm(formEl) {
-        const fd = new FormData(formEl);
+      function payloadFromForm(f){
+        const fd = new FormData(f);
         return {
           idea_title:    (fd.get("idea_title")    || "").toString().trim(),
           current_stage: (fd.get("current_stage") || "").toString().trim(),
@@ -124,24 +118,20 @@
         if (!form.reportValidity()) return;
 
         const body = { journey_type: "idea", payload: payloadFromForm(form) };
-        const oldTxt = btn.textContent;
-        btn.disabled = true; btn.textContent = "Submitting…";
+        const old = btn.textContent; btn.disabled = true; btn.textContent = "Submitting…";
 
         try {
           const resp = await fetch(`${NEXTIFY_API_BASE}/api/submit`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
           });
           const data = await resp.json();
           if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
-
-          // Go to processing page with job id
           window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
         } catch (err) {
-          status.textContent = "Submit failed. Ensure the backend and ngrok are running.";
+          status.textContent = "Submit failed. Ensure the backend/ngrok are running.";
           alert(err.message);
-          btn.disabled = false; btn.textContent = oldTxt;
+          btn.disabled = false; btn.textContent = old;
         }
       });
     })();

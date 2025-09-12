@@ -1,92 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Nextify — Processing</title>
-  <!-- Keep your existing CSS links here if you have them -->
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; background:#fff; color:#111; }
-    .topbar { padding:18px 0; border-bottom:1px solid #eee; }
-    .brand { color:#2563eb; font-weight:800; font-size:22px; letter-spacing:.2px; }
-    .container { max-width: 1040px; margin: 0 auto; padding: 24px; }
-    h1 { margin:0 0 8px; }
-    .row { margin: 8px 0; }
-    #barOuter { width:100%; background:#eee; height:20px; border-radius:10px; overflow:hidden; margin-top: 6px; }
-    #progressBar { height:20px; width:0%; background:#2563eb; transition: width .25s ease; }
-    #downloadBtn { margin-top: 16px; background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:10px; font-size:16px; cursor:pointer; }
-    #downloadBtn[disabled]{ opacity:.6; cursor:not-allowed; }
+    :root{--fg:#111827;--muted:#6b7280;--brand:#1f6feb;--border:#e5e7eb;--track:#e5e7eb;--fill:#1f6feb;}
+    body{margin:0;background:#fff;color:var(--fg);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;font-size:15px}
+    .wrap{max-width:640px;margin:36px auto;padding:0 16px 56px}
+    h1{font-size:1.35rem;margin:0 0 16px}
+    .kv{margin:8px 0;color:var(--muted)}
+    .bar{height:12px;background:var(--track);border-radius:8px;overflow:hidden}
+    .bar>span{display:block;height:100%;background:var(--fill);width:0%}
+    .row{display:flex;gap:8px;align-items:center;margin-top:12px}
+    .btn{padding:8px 14px;border-radius:6px;border:1px solid transparent;background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .note{color:var(--muted);font-size:.9rem}
+    .bad{color:#b91c1c}
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="container"><span class="brand">Nextify</span></div>
-  </div>
-
-  <div class="container">
+  <main class="wrap">
     <h1>Running your analysis</h1>
+    <div class="kv">Status: <span id="status">—</span></div>
+    <div class="kv">Step: <span id="step">—</span></div>
 
-    <div class="row">Status: <strong id="statusText">—</strong></div>
-    <div class="row">Step: <strong id="stepText">—</strong></div>
+    <div class="bar" style="margin:10px 0 8px 0"><span id="fill"></span></div>
+    <div class="kv"><span id="pct">0%</span></div>
 
-    <div id="barOuter"><div id="progressBar"></div></div>
-    <div class="row"><span id="pct">0%</span></div>
-
-    <button id="downloadBtn" disabled>Download report</button>
-  </div>
+    <div class="row">
+      <button id="dl" class="btn" disabled>Download report</button>
+      <span id="msg" class="note"></span>
+    </div>
+  </main>
 
   <script>
-  (async function () {
-    // Stable ngrok URL (custom domain you shared)
-    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    (function(){
+      // SAME ngrok domain as the idea page:
+      const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
-    const params = new URLSearchParams(location.search);
-    const job = params.get("job");
-    if (!job) { alert("No job id in URL."); return; }
+      const job   = new URLSearchParams(location.search).get("job");
+      const elS   = document.getElementById("status");
+      const elStep= document.getElementById("step");
+      const elPct = document.getElementById("pct");
+      const elFill= document.getElementById("fill");
+      const msg   = document.getElementById("msg");
+      const dlBtn = document.getElementById("dl");
 
-    const progressBar = document.getElementById("progressBar");
-    const statusText  = document.getElementById("statusText");
-    const stepText    = document.getElementById("stepText");
-    const pctText     = document.getElementById("pct");
-    const downloadBtn = document.getElementById("downloadBtn");
-
-    function setPct(n) {
-      const p = Math.max(0, Math.min(100, parseInt(n || 0, 10)));
-      progressBar.style.width = p + "%";
-      pctText.textContent = p + "%";
-    }
-
-    try {
-      while (true) {
-        const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${encodeURIComponent(job)}`, { cache: "no-store" });
-        const s = await r.json();
-        if (!r.ok) throw new Error(s.detail || `HTTP ${r.status}`);
-
-        setPct(s.progress);
-        statusText.textContent = s.status || "";
-        stepText.textContent   = s.step   || "";
-
-        if (s.status === "failed") {
-          downloadBtn.disabled = true;
-          downloadBtn.textContent = "Run failed";
-          alert("Pipeline failed: " + (s.message || "Unknown error"));
-          break;
-        }
-
-        if (s.ready) {
-          const pdfURL = `${NEXTIFY_API_BASE}/api/result/${encodeURIComponent(job)}`;
-          downloadBtn.disabled = false;
-          downloadBtn.textContent = "Download report";
-          downloadBtn.onclick = () => { window.location.href = pdfURL; };
-          break;
-        }
-
-        await new Promise(res => setTimeout(res, 1200));
+      if (!job){
+        elS.textContent = "No job id";
+        msg.textContent = "Return and submit the form again.";
+        return;
       }
-    } catch (e) {
-      alert("Cannot reach backend. Check ngrok and FastAPI are running.\n\n" + e.message);
-    }
-  })();
+
+      async function safeJSON(resp, url){
+        // If ngrok or FastAPI returns HTML, guard the JSON parse.
+        const ct = resp.headers.get("content-type") || "";
+        if (!ct.includes("application/json")){
+          const txt = await resp.text();
+          throw new Error(`Expected JSON but got '${ct}'. URL: ${url}\nFirst bytes: ${txt.slice(0,80)}`);
+        }
+        return resp.json();
+      }
+
+      async function poll(){
+        try{
+          const url = `${NEXTIFY_API_BASE}/api/status/${job}`;
+          const r   = await fetch(url, { cache:"no-store", headers: { "Accept":"application/json" } });
+          const s   = await safeJSON(r, url);
+          elS.textContent = s.status || "—";
+          elStep.textContent = s.step || "—";
+          const p = Number(s.progress || 0);
+          elPct.textContent  = `${p}%`;
+          elFill.style.width = `${Math.max(0,Math.min(p,100))}%`;
+
+          if (s.status === "done"){
+            dlBtn.disabled = false;
+            dlBtn.onclick = () => window.location.href = `${NEXTIFY_API_BASE}/api/result/${job}`;
+            msg.textContent = "Report ready.";
+            return; // stop polling
+          }
+          if (s.status === "failed"){
+            msg.textContent = s.message || "Job failed.";
+            msg.classList.add("bad");
+            return;
+          }
+          // keep polling
+          setTimeout(poll, 1500);
+        }catch(err){
+          // Most common: ngrok not pointing to FastAPI; or FastAPI not running
+          msg.textContent = "Cannot reach backend. Check ngrok and FastAPI are running.\n" + err.message;
+          msg.classList.add("bad");
+        }
+      }
+      poll();
+    })();
   </script>
 </body>
 </html>
