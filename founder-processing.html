@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Founder – Processing</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    #barOuter { width: 100%; background: #eee; height: 20px; border-radius: 4px; margin-top: 1em; }
-    #progressBar { height: 20px; width: 0%; background: #4caf50; border-radius: 4px; }
-  </style>
+  <title>Nextify – Processing</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <h1>Processing Your Report…</h1>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-2xl mx-auto py-12 px-4 text-center">
+    <h1 class="text-2xl font-bold mb-6">Running your analysis</h1>
 
-  <p>Status: <span id="statusText">Starting…</span></p>
-  <p>Step: <span id="stepText">Queued</span></p>
-  <div id="barOuter"><div id="progressBar"></div></div>
-  <p><span id="pct">0%</span></p>
+    <div class="w-full bg-gray-200 rounded-full h-4 mb-4">
+      <div id="progressBar" class="bg-blue-600 h-4 rounded-full" style="width: 0%"></div>
+    </div>
+    <p>Status: <span id="statusText">—</span></p>
+    <p>Step: <span id="stepText">—</span></p>
+    <p><span id="pct">0%</span></p>
 
-  <button id="downloadBtn" disabled>Download report</button>
+    <button id="downloadBtn" disabled class="bg-gray-400 text-white px-6 py-2 rounded mt-6">Download Report</button>
+  </div>
 
   <script>
   (async function () {
     let NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") || "";
-    if (!NEXTIFY_API_BASE || !/^https:\/\/.+/.test(NEXTIFY_API_BASE)) {
-      const v = prompt("Enter your API base (ngrok https URL):", "https://xxxx.ngrok-free.app");
+    if (!/^https:\/\/.+/.test(NEXTIFY_API_BASE)) {
+      const v = prompt("Enter your API base (ngrok https URL):", "https://xxxxx.ngrok-free.app");
       if (v && /^https:\/\/.+/.test(v.trim())) {
         NEXTIFY_API_BASE = v.trim();
         localStorage.setItem("NEXTIFY_API_BASE", NEXTIFY_API_BASE);
@@ -33,7 +33,7 @@
 
     const q = new URLSearchParams(location.search);
     const job = q.get("job");
-    if (!job) { alert("No job id."); return; }
+    if (!job) { console.warn("No job id"); return; }
 
     const progressBar = document.getElementById("progressBar");
     const statusText  = document.getElementById("statusText");
@@ -47,30 +47,32 @@
       pctText.textContent = p + "%";
     }
 
-    while (true) {
-      const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${encodeURIComponent(job)}`, { cache: "no-store" });
-      const s = await r.json();
+    try {
+      while (true) {
+        const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${encodeURIComponent(job)}`, { cache: "no-store" });
+        const s = await r.json();
+        setPct(s.progress);
+        statusText.textContent = s.status || "";
+        stepText.textContent   = s.step   || "";
 
-      setPct(s.progress);
-      statusText.textContent = s.status || "";
-      stepText.textContent   = s.step   || "";
+        if (s.status === "failed") {
+          downloadBtn.disabled = true;
+          downloadBtn.textContent = "Run failed";
+          alert("Pipeline failed: " + (s.message || ""));
+          break;
+        }
 
-      if (s.status === "failed") {
-        downloadBtn.disabled = true;
-        downloadBtn.textContent = "Run failed";
-        alert("Pipeline failed: " + (s.message || ""));
-        break;
+        if (s.ready) {
+          const pdfURL = `${NEXTIFY_API_BASE}/api/result/${encodeURIComponent(job)}`;
+          downloadBtn.disabled = false;
+          downloadBtn.textContent = "Download report";
+          downloadBtn.onclick = () => { window.location.href = pdfURL; };
+          break;
+        }
+        await new Promise(res => setTimeout(res, 1200));
       }
-
-      if (s.ready) {
-        const pdfURL = `${NEXTIFY_API_BASE}/api/result/${encodeURIComponent(job)}`;
-        downloadBtn.disabled = false;
-        downloadBtn.textContent = "Download report";
-        downloadBtn.onclick = () => { window.location.href = pdfURL; };
-        break;
-      }
-
-      await new Promise(res => setTimeout(res, 1200));
+    } catch (e) {
+      alert("Cannot reach backend.\n\n" + e.message);
     }
   })();
   </script>
