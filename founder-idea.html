@@ -24,7 +24,7 @@
 
     <form id="idea-form" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- idea title -->
+        <!-- Idea title -->
         <div class="md:col-span-2">
           <label for="idea_title" class="block text-sm font-medium text-gray-800 mb-1">
             Idea title <span class="text-red-500">*</span>
@@ -35,7 +35,7 @@
                         focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
         </div>
 
-        <!-- current stage -->
+        <!-- Current stage -->
         <div>
           <label for="current_stage" class="block text-sm font-medium text-gray-800 mb-1">
             Current stage <span class="text-red-500">*</span>
@@ -51,7 +51,7 @@
           </select>
         </div>
 
-        <!-- region / location -->
+        <!-- Location / Region (REQUIRED) -->
         <div>
           <label for="region" class="block text-sm font-medium text-gray-800 mb-1">
             Location / Region <span class="text-red-500">*</span>
@@ -62,7 +62,7 @@
                         focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
         </div>
 
-        <!-- problem -->
+        <!-- Problem -->
         <div class="md:col-span-2">
           <label for="problem" class="block text-sm font-medium text-gray-800 mb-1">
             What problem does it solve? <span class="text-red-500">*</span>
@@ -73,7 +73,7 @@
                            focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"></textarea>
         </div>
 
-        <!-- target users -->
+        <!-- Target users -->
         <div class="md:col-span-2">
           <label for="target_users" class="block text-sm font-medium text-gray-800 mb-1">
             Who is it for? <span class="text-red-500">*</span>
@@ -84,7 +84,7 @@
                         focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
         </div>
 
-        <!-- constraints -->
+        <!-- Constraints -->
         <div class="md:col-span-2">
           <label for="constraints" class="block text-sm font-medium text-gray-800 mb-1">
             Constraints (optional)
@@ -97,7 +97,7 @@
         </div>
       </div>
 
-      <!-- buttons -->
+      <!-- Buttons -->
       <div class="flex items-center gap-3 pt-2">
         <a href="roles-founder.html"
            class="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2.5 text-gray-700 hover:bg-gray-50">
@@ -115,6 +115,7 @@
   <!-- backend wiring -->
   <script>
   (function () {
+    // Use saved ngrok base if available (so you don’t have to paste every time)
     let NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") || "";
     if (!/^https:\/\/.+/.test(NEXTIFY_API_BASE)) {
       const v = prompt("Enter your API base (ngrok https URL):", "https://xxxxx.ngrok-free.app");
@@ -130,6 +131,7 @@
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
 
+      // Gather all fields (including region)
       const fd = new FormData(form);
       const payload = {};
       for (const [k, v] of fd.entries()) payload[k] = (v ?? "").toString().trim();
