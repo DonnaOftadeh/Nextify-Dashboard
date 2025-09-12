@@ -1,125 +1,92 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Nextify — Idea</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg:#0b1220; --panel:#0f172a; --muted:#94a3b8; --brand:#2563eb}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:#e2e8f0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    .wrap{max-width:900px;margin:36px auto;padding:0 16px}
-    .head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-    .title{font-weight:800}
-    .panel{background:var(--panel);border:1px solid #1e293b;border-radius:16px;padding:20px}
-    .row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
-    label{font-weight:600}
-    input[type="text"], textarea, select{width:100%;background:#0b1324;border:1px solid #24324a;border-radius:10px;color:#e2e8f0;padding:10px 12px}
-    textarea{min-height:110px;line-height:1.45}
-    .submit{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer}
-    .submit[disabled]{opacity:.6;cursor:not-allowed}
-    .muted{color:var(--muted);font-size:14px}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Founder – Submit Idea</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="wrap">
-    <div class="head">
-      <div class="title">Nextify</div>
-      <div class="muted">→ Idea</div>
-    </div>
+  <h1>Submit Your Idea</h1>
 
-    <h1 style="margin:8px 0 16px 0">Start with your Idea</h1>
-    <p class="muted" style="margin:0 0 16px 0">Tell us your idea, we’ll generate a structured innovation report.</p>
+  <form id="idea-form">
+    <label>Idea title<br />
+      <input type="text" name="idea_title" required />
+    </label>
+    <br /><br />
 
-    <form id="idea-form" class="panel">
-      <div class="row">
-        <label for="idea_title">Idea title</label>
-        <input type="text" id="idea_title" name="idea_title" placeholder="Global Innovation Platform" required />
-      </div>
+    <label>What problem does it solve?<br />
+      <textarea name="problem" required></textarea>
+    </label>
+    <br /><br />
 
-      <div class="row">
-        <label for="current_stage">Current stage</label>
-        <select id="current_stage" name="current_stage" required>
-          <option value="Idea only">Idea only</option>
-          <option value="Prototype">Prototype</option>
-          <option value="MVP">MVP</option>
-          <option value="Launched">Launched</option>
-        </select>
-      </div>
+    <label>Who is it for?<br />
+      <input type="text" name="target_users" required />
+    </label>
+    <br /><br />
 
-      <div class="row">
-        <label for="problem">Problem</label>
-        <textarea id="problem" name="problem" placeholder="What problem does this solve?" required></textarea>
-      </div>
+    <label>Current stage<br />
+      <select name="current_stage" required>
+        <option value="Concept">Concept</option>
+        <option value="Prototype">Prototype</option>
+        <option value="MVP">MVP</option>
+        <option value="Growth">Growth</option>
+      </select>
+    </label>
+    <br /><br />
 
-      <div class="row">
-        <label for="target_users">Target users</label>
-        <textarea id="target_users" name="target_users" placeholder="Who is it for?" required></textarea>
-      </div>
+    <label>Constraints (optional)<br />
+      <textarea name="constraints"></textarea>
+    </label>
+    <br /><br />
 
-      <div class="row">
-        <label for="constraints">Constraints (optional)</label>
-        <textarea id="constraints" name="constraints" placeholder="Budget, solo founder, etc."></textarea>
-      </div>
+    <label>Region<br />
+      <input type="text" name="region" value="Global" />
+    </label>
+    <br /><br />
 
-      <input type="hidden" name="region" value="Global" />
-
-      <button type="submit" class="submit">Continue</button>
-      <span id="apiBadge" class="muted" style="margin-left:12px;"></span>
-    </form>
-  </div>
+    <button type="submit">Submit Idea</button>
+  </form>
 
   <script>
-    // Read the API base from localStorage (set via set-ngrok.html). Fallback is a placeholder.
-    const NEXTIFY_API_BASE =
-      localStorage.getItem("NEXTIFY_API_BASE") || "https://REPLACE-ME.ngrok-free.app";
+  (function () {
+    let NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") || "";
+    if (!NEXTIFY_API_BASE || !/^https:\/\/.+/.test(NEXTIFY_API_BASE)) {
+      const v = prompt("Enter your API base (ngrok https URL):", "https://xxxx.ngrok-free.app");
+      if (v && /^https:\/\/.+/.test(v.trim())) {
+        NEXTIFY_API_BASE = v.trim();
+        localStorage.setItem("NEXTIFY_API_BASE", NEXTIFY_API_BASE);
+      }
+    }
 
-    // Reachability badge (non-blocking)
-    (async () => {
-      const el = document.getElementById("apiBadge");
-      try { await fetch(`${NEXTIFY_API_BASE}/`, { cache: "no-store" }); el.textContent = "API: reachable"; }
-      catch { el.textContent = "API: not reachable"; }
-    })();
+    const form = document.getElementById("idea-form");
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(form);
+      const payload = Object.fromEntries(fd.entries());
+      const body = { journey_type: "idea", payload };
 
-    (function () {
-      const form = document.getElementById("idea-form");
-      if (!form) return;
+      const btn = form.querySelector('[type="submit"]');
+      const oldTxt = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Submitting…";
 
-      form.addEventListener("submit", async (ev) => {
-        ev.preventDefault();
-
-        const fd = new FormData(form);
-        const payload = {
-          idea_title:    (fd.get("idea_title")    || "").toString().trim(),
-          current_stage: (fd.get("current_stage") || "").toString().trim(),
-          problem:       (fd.get("problem")       || "").toString().trim(),
-          target_users:  (fd.get("target_users")  || "").toString().trim(),
-          constraints:   (fd.get("constraints")   || "").toString().trim(),
-          region:        (fd.get("region")        || "Global").toString().trim(),
-        };
-        const body = { journey_type: "idea", payload };
-
-        const btn = form.querySelector('button[type="submit"]');
-        const old = btn.textContent;
-        btn.disabled = true; btn.textContent = "Submitting…";
-
-        try {
-          const resp = await fetch(`${NEXTIFY_API_BASE}/api/submit`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-          });
-          const data = await resp.json();
-          if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
-
-          window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
-        } catch (e) {
-          alert("Submit failed. Check API URL / ngrok / backend.\n\n" + e.message);
-          btn.disabled = false; btn.textContent = old;
-        }
-      });
-    })();
+      try {
+        const resp = await fetch(`${NEXTIFY_API_BASE}/api/submit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+        window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
+      } catch (err) {
+        alert("Submit failed.\n\n" + err.message);
+        btn.disabled = false;
+        btn.textContent = oldTxt;
+      }
+    });
+  })();
   </script>
 </body>
 </html>

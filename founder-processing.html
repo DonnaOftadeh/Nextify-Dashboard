@@ -1,113 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Nextify — Processing</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Founder – Processing</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    :root{--bg:#0b1220; --panel:#0f172a; --muted:#94a3b8; --brand:#2563eb; --ok:#16a34a}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:#e2e8f0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    .wrap{max-width:900px;margin:36px auto;padding:0 16px}
-    .panel{background:var(--panel);border:1px solid #1e293b;border-radius:16px;padding:20px}
-    .muted{color:var(--muted)}
-    .bar{height:10px;background:#0b1324;border:1px solid #1e293b;border-radius:999px;overflow:hidden}
-    .bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#2563eb,#0ea5e9)}
-    .row{display:flex;justify-content:space-between;margin-top:8px;font-size:14px}
-    a.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;text-decoration:none;border:1px solid #1e293b}
-    a.btn.primary{background:var(--brand); color:#fff; border-color:transparent}
-    #log{max-height:240px;overflow:auto;border:1px solid #1e293b;border-radius:10px;padding:8px;background:#0b1324;margin-top:14px;font-size:13px}
+    #barOuter { width: 100%; background: #eee; height: 20px; border-radius: 4px; margin-top: 1em; }
+    #progressBar { height: 20px; width: 0%; background: #4caf50; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Running your analysis</h1>
-    <div class="panel">
-      <div class="bar"><span id="progressBar"></span></div>
-      <div class="row">
-        <div>Status: <span id="statusText" class="muted">—</span></div>
-        <div><span id="pct" class="muted">0%</span></div>
-      </div>
-      <div class="row">
-        <div>Step: <span id="stepText" class="muted">—</span></div>
-        <div>Job: <span id="jobText" class="muted">—</span></div>
-      </div>
+  <h1>Processing Your Report…</h1>
 
-      <div style="margin-top:16px;display:flex;gap:10px">
-        <a id="pdfLink" class="btn" href="#" onclick="return false;">Download will appear here…</a>
-        <a id="rawLink" class="btn" href="#" onclick="return false;">Raw output (debug)</a>
-      </div>
+  <p>Status: <span id="statusText">Starting…</span></p>
+  <p>Step: <span id="stepText">Queued</span></p>
+  <div id="barOuter"><div id="progressBar"></div></div>
+  <p><span id="pct">0%</span></p>
 
-      <div id="log"></div>
-    </div>
-  </div>
+  <button id="downloadBtn" disabled>Download report</button>
 
   <script>
-    // Read the API base saved via set-ngrok.html
-    const NEXTIFY_API_BASE =
-      localStorage.getItem("NEXTIFY_API_BASE") || "https://REPLACE-ME.ngrok-free.app";
+  (async function () {
+    let NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") || "";
+    if (!NEXTIFY_API_BASE || !/^https:\/\/.+/.test(NEXTIFY_API_BASE)) {
+      const v = prompt("Enter your API base (ngrok https URL):", "https://xxxx.ngrok-free.app");
+      if (v && /^https:\/\/.+/.test(v.trim())) {
+        NEXTIFY_API_BASE = v.trim();
+        localStorage.setItem("NEXTIFY_API_BASE", NEXTIFY_API_BASE);
+      } else return;
+    }
 
-    const params = new URLSearchParams(location.search);
-    const jobId = params.get("job") || "";
+    const q = new URLSearchParams(location.search);
+    const job = q.get("job");
+    if (!job) { alert("No job id."); return; }
 
     const progressBar = document.getElementById("progressBar");
-    const pctText     = document.getElementById("pct");
     const statusText  = document.getElementById("statusText");
     const stepText    = document.getElementById("stepText");
-    const jobText     = document.getElementById("jobText");
-    const pdfLink     = document.getElementById("pdfLink");
-    const rawLink     = document.getElementById("rawLink");
-    const logEl       = document.getElementById("log");
+    const pctText     = document.getElementById("pct");
+    const downloadBtn = document.getElementById("downloadBtn");
 
-    jobText.textContent = jobId || "—";
-
-    function setProgress(n){
+    function setPct(n) {
       const p = Math.max(0, Math.min(100, parseInt(n || 0, 10)));
       progressBar.style.width = p + "%";
       pctText.textContent = p + "%";
     }
-    function log(line){
-      const t = new Date().toLocaleTimeString();
-      logEl.insertAdjacentHTML("beforeend", `<div><span style="color:#94a3b8">${t}</span> — ${line}</div>`);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
 
-    async function poll(job) {
-      if (!job) { alert("No job id found."); return; }
-      try {
-        while (true) {
-          const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${encodeURIComponent(job)}`, { cache: "no-store" });
-          const s = await r.json();
-          if (!r.ok) throw new Error(s.detail || `HTTP ${r.status}`);
+    while (true) {
+      const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${encodeURIComponent(job)}`, { cache: "no-store" });
+      const s = await r.json();
 
-          setProgress(s.progress);
-          statusText.textContent = s.status || "";
-          stepText.textContent   = s.step || "";
-          log(`${s.progress || 0}% | ${s.status} | ${s.step} ${s.message ? "— "+s.message : ""}`);
+      setPct(s.progress);
+      statusText.textContent = s.status || "";
+      stepText.textContent   = s.step   || "";
 
-          if (s.status === "failed") {
-            pdfLink.textContent = "Run failed";
-            pdfLink.removeAttribute("href");
-            alert(`Pipeline failed: ${s.message || "Unknown error"}`);
-            break;
-          }
-          if (s.ready) {
-            pdfLink.textContent = "Download Report (PDF)";
-            pdfLink.href = `${NEXTIFY_API_BASE}/api/result/${encodeURIComponent(job)}`;
-            rawLink.textContent = "Raw output";
-            rawLink.href = `${NEXTIFY_API_BASE}/api/debug/${encodeURIComponent(job)}/raw`;
-            break;
-          }
-          await new Promise(res => setTimeout(res, 1200));
-        }
-      } catch (e) {
-        log("Poll error: " + e.message);
-        alert("Cannot reach backend. Check ngrok URL / CORS.");
+      if (s.status === "failed") {
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = "Run failed";
+        alert("Pipeline failed: " + (s.message || ""));
+        break;
       }
-    }
 
-    poll(jobId);
+      if (s.ready) {
+        const pdfURL = `${NEXTIFY_API_BASE}/api/result/${encodeURIComponent(job)}`;
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = "Download report";
+        downloadBtn.onclick = () => { window.location.href = pdfURL; };
+        break;
+      }
+
+      await new Promise(res => setTimeout(res, 1200));
+    }
+  })();
   </script>
 </body>
 </html>
