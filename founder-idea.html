@@ -5,77 +5,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nextify – Idea</title>
 
-  <!-- ✅ Tailwind CDN so the page looks like your other forms -->
+  <!-- Same CSS stack as other pages -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Optional: light container width like your other pages -->
   <style>
-    .form-label { @apply block text-sm font-medium text-gray-700 mb-1; }
-    .form-input { @apply block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500; }
-    .hint { @apply text-sm text-gray-500; }
+    /* tiny helpers to mirror your other forms */
+    .field-label { @apply block text-sm font-medium text-gray-800 mb-1; }
+    .field-help  { @apply text-xs text-gray-500 mt-1; }
+    .control     { @apply w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-gray-900
+                          shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600; }
+    .card        { @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-5; }
+    .btn-primary { @apply inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5
+                          text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed; }
+    .btn-ghost   { @apply inline-flex items-center justify-center rounded-xl border border-gray-300
+                          px-4 py-2.5 text-gray-700 hover:bg-gray-50; }
   </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
-  <header class="border-b bg-white">
-    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="index.html" class="text-xl font-semibold text-blue-700">Nextify</a>
-      <a href="roles-founder.html" class="text-sm text-gray-500 hover:text-gray-700">← Back</a>
+  <!-- Top bar like other pages -->
+  <header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="index.html" class="text-lg font-semibold text-blue-700">Nextify</a>
+      <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-gray-800">← Back</a>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-10">
-    <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-2">Start with your Idea</h1>
-    <p class="text-gray-600 mb-8">Tell us your idea, we’ll generate a structured innovation report.</p>
+  <main class="max-w-5xl mx-auto px-4 py-10">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900">Start with your Idea</h1>
+      <p class="text-gray-600 mt-2">Tell us your idea, we’ll generate a structured innovation report.</p>
+    </div>
 
-    <!-- ✅ Keep your form UX; only classes/styles added -->
-    <form id="idea-form" class="space-y-6">
-      <div>
-        <label for="idea_title" class="form-label">Idea title <span class="text-red-500">*</span></label>
-        <input id="idea_title" name="idea_title" type="text" required class="form-input"
-               placeholder="e.g., Global Innovation Platform" />
-      </div>
+    <!-- Content card matches other pages -->
+    <form id="idea-form" class="card space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+          <label for="idea_title" class="field-label">Idea title <span class="text-red-500">*</span></label>
+          <input id="idea_title" name="idea_title" type="text" required
+                 class="control"
+                 placeholder="e.g., Global Innovation Platform" />
+        </div>
 
-      <div>
-        <label for="current_stage" class="form-label">Current stage <span class="text-red-500">*</span></label>
-        <select id="current_stage" name="current_stage" required class="form-input">
-          <option value="">Choose a stage…</option>
-          <option>Idea only</option>
-          <option>Prototype</option>
-          <option>MVP</option>
-          <option>Growth</option>
-        </select>
-      </div>
+        <div>
+          <label for="current_stage" class="field-label">Current stage <span class="text-red-500">*</span></label>
+          <select id="current_stage" name="current_stage" required class="control">
+            <option value="">Choose a stage…</option>
+            <option>Idea only</option>
+            <option>Prototype</option>
+            <option>MVP</option>
+            <option>Growth</option>
+          </select>
+        </div>
 
-      <div>
-        <label for="problem" class="form-label">What problem does it solve? <span class="text-red-500">*</span></label>
-        <textarea id="problem" name="problem" required class="form-input" rows="4"
-          placeholder="e.g., Founders can’t easily connect with global investors; discovery is fragmented"></textarea>
-      </div>
+        <div class="md:col-span-2">
+          <label for="problem" class="field-label">What problem does it solve? <span class="text-red-500">*</span></label>
+          <textarea id="problem" name="problem" rows="5" required
+                    class="control"
+                    placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."></textarea>
+        </div>
 
-      <div>
-        <label for="target_users" class="form-label">Who is it for? <span class="text-red-500">*</span></label>
-        <input id="target_users" name="target_users" type="text" required class="form-input"
-               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" />
-      </div>
+        <div class="md:col-span-2">
+          <label for="target_users" class="field-label">Who is it for? <span class="text-red-500">*</span></label>
+          <input id="target_users" name="target_users" type="text" required
+                 class="control"
+                 placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" />
+        </div>
 
-      <div>
-        <label for="constraints" class="form-label">Constraints (optional)</label>
-        <textarea id="constraints" name="constraints" class="form-input" rows="3"
-          placeholder="e.g., Solo founder, limited budget, need design help"></textarea>
-        <p class="hint mt-1">Add anything that may affect scope/timeline.</p>
+        <div class="md:col-span-2">
+          <label for="constraints" class="field-label">Constraints (optional)</label>
+          <textarea id="constraints" name="constraints" rows="3"
+                    class="control"
+                    placeholder="e.g., Solo founder; limited budget; need design help"></textarea>
+          <p class="field-help">Add anything that may affect scope, timeline, or feasibility.</p>
+        </div>
       </div>
 
       <div class="flex items-center gap-3 pt-2">
-        <a href="roles-founder.html" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">Cancel</a>
-        <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Continue</button>
+        <a href="roles-founder.html" class="btn-ghost">Cancel</a>
+        <button type="submit" class="btn-primary">Continue</button>
       </div>
     </form>
   </main>
 
-  <!-- ✅ Backend wiring; no UX changes -->
+  <!-- Backend wiring: same behavior, no visual intrusion -->
   <script>
   (function () {
+    // Get (or set once) your ngrok/API base so you don’t hardcode it in HTML.
     let NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") || "";
     if (!/^https:\/\/.+/.test(NEXTIFY_API_BASE)) {
       const v = prompt("Enter your API base (ngrok https URL):", "https://xxxxx.ngrok-free.app");
@@ -91,11 +107,11 @@
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
 
-      // Serialize all existing fields without renaming
+      // Serialize without renaming so it matches your backend expectation
       const fd = new FormData(form);
       const payload = {};
       for (const [k, v] of fd.entries()) payload[k] = (v ?? "").toString().trim();
-      if (!("region" in payload)) payload.region = "Global"; // default
+      if (!("region" in payload)) payload.region = "Global";
 
       const body = { journey_type: "idea", payload };
 
@@ -111,9 +127,11 @@
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+
+        // Go to progress page like your other flows
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (err) {
-        alert("Submit failed. Check API/ngrok.\n\n" + err.message);
+        alert("Submit failed. Please check API/ngrok.\n\n" + err.message);
         btn.disabled = false; btn.textContent = oldTxt;
       }
     });
