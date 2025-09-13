@@ -8,14 +8,28 @@
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Optional: same font as other forms -->
+  <!-- Inter font (same look as other forms) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     html { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; }
-    .required:after { content:" *"; color:red; }
+    .required::after { content: " *"; color: #dc2626; } /* red asterisk */
+
+    /* One height to rule them all (≈56px). Change h-14 below if you want taller/shorter. */
+    .nf-field {
+      @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm h-14 px-4;
+    }
+
+    /* Textareas use the same exact height (single-line look but taller). */
+    .nf-textarea {
+      @apply nf-field;           /* inherits h-14 */
+      resize: none;              /* keep the height consistent */
+      line-height: 1.25rem;      /* comfortable baseline inside */
+      padding-top: 0.625rem;     /* match input padding look */
+      padding-bottom: 0.625rem;
+    }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
@@ -32,15 +46,14 @@
       <div>
         <label class="block font-medium text-gray-900 required">Idea title</label>
         <input type="text" name="idea_title" placeholder="e.g., Global Innovation Platform"
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+               class="nf-field" required>
       </div>
 
       <!-- Stage + Region -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block font-medium text-gray-900 required">Current stage</label>
-          <select name="current_stage"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+          <select name="current_stage" class="nf-field" required>
             <option value="">Choose a stage...</option>
             <option>Idea</option>
             <option>MVP</option>
@@ -50,37 +63,37 @@
         </div>
         <div>
           <label class="block font-medium text-gray-900">Region</label>
-          <input type="text" name="region" value="Global"
-                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-          <p class="mt-1 text-xs text-gray-500">Default is Global; you can specify e.g., Berlin, EU, US-East.</p>
+          <input type="text" name="region" value="Global" class="nf-field">
+          <p class="mt-2 text-xs text-gray-500">Default is Global; you can specify e.g., Berlin, EU, US-East.</p>
         </div>
       </div>
 
       <!-- Problem -->
       <div>
         <label class="block font-medium text-gray-900 required">What problem does it solve?</label>
-        <textarea name="problem" rows="3" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></textarea>
+        <textarea name="problem"
+                  placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."
+                  class="nf-textarea" required></textarea>
       </div>
 
       <!-- Target Users -->
       <div>
         <label class="block font-medium text-gray-900 required">Who is it for?</label>
-        <input type="text" name="target_users" placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators"
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+        <input type="text" name="target_users"
+               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators"
+               class="nf-field" required>
       </div>
 
       <!-- Constraints -->
       <div>
         <label class="block font-medium text-gray-900">Constraints (optional)</label>
-        <textarea name="constraints" rows="2"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+        <textarea name="constraints" class="nf-textarea" placeholder=""></textarea>
       </div>
 
       <!-- Submit -->
       <div>
         <button type="submit"
-                class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Submit Idea
         </button>
       </div>
@@ -93,11 +106,16 @@
 
     (async () => {
       try {
-        const resp = await fetch(NEXTIFY_API_BASE + "/", {cache:"no-store"});
-        if (!resp.ok) throw new Error(await resp.text());
+        const resp = await fetch(NEXTIFY_API_BASE + "/", { cache: "no-store" });
+        // Expect JSON. If the root returns JSON fine, leave banner hidden.
+        const ct = resp.headers.get("content-type") || "";
+        if (!resp.ok || !ct.includes("application/json")) {
+          throw new Error("Non-JSON or error from API root");
+        }
       } catch (err) {
-        document.getElementById("api-status").classList.remove("hidden");
-        document.getElementById("api-status").textContent = "API: Not reachable (non-JSON response)";
+        const el = document.getElementById("api-status");
+        el.classList.remove("hidden");
+        el.textContent = "API: Not reachable (non-JSON response)";
       }
     })();
 
@@ -105,25 +123,28 @@
       ev.preventDefault();
       const fd = new FormData(ev.target);
       const payload = {
-        idea_title: fd.get("idea_title"),
-        current_stage: fd.get("current_stage"),
-        problem: fd.get("problem"),
-        target_users: fd.get("target_users"),
-        constraints: fd.get("constraints"),
-        region: fd.get("region") || "Global"
+        idea_title:    (fd.get("idea_title")    || "").trim(),
+        current_stage: (fd.get("current_stage") || "").trim(),
+        problem:       (fd.get("problem")       || "").trim(),
+        target_users:  (fd.get("target_users")  || "").trim(),
+        constraints:   (fd.get("constraints")   || "").trim(),
+        region:        (fd.get("region")        || "Global").trim()
       };
       const body = { journey_type: "idea", payload };
 
       try {
         const resp = await fetch(NEXTIFY_API_BASE + "/api/submit", {
-          method:"POST", headers:{"Content-Type":"application/json"},
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body)
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || resp.statusText);
+
+        // Go to processing page
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (err) {
-        alert("Submit failed. Check API.\n\n" + err.message);
+        alert("Submit failed. Please check the API URL / ngrok / CORS.\n\n" + err.message);
       }
     });
   </script>
