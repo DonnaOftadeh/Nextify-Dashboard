@@ -80,7 +80,15 @@
       .replace(/^http:\/\//, "https://")
       .replace(/\/$/, "");
     // Helper to bypass ngrok’s browser warning page by appending a query param
-    const api = (path) => NEXTIFY_API_BASE + path + (path.includes('?') ? '&' : '?') + 'ngrok-skip-browser-warning=true';
+    const api = (path) => {
+      try {
+        const url = new URL(path, NEXTIFY_API_BASE);
+        url.searchParams.set("ngrok-skip-browser-warning", "true");
+        return url.toString();
+      } catch {
+        return "";
+      }
+    };
     (async () => {
       const statusEl = document.getElementById("api-status");
       if (!NEXTIFY_API_BASE) {
@@ -90,15 +98,16 @@
         return;
       }
       try {
-        const r = await fetch(api("/"), { cache: "no-store" });
+        const r = await fetch(api("/"), { cache: "no-store", mode: "cors" });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         statusEl.classList.remove("hidden");
         statusEl.classList.add("bg-green-50","text-green-700","border","border-green-200");
-        statusEl.textContent = "API connected successfully.";
+        statusEl.textContent = `API connected: ${NEXTIFY_API_BASE}`;
       } catch (e) {
         statusEl.classList.remove("hidden");
         statusEl.classList.add("bg-red-50","text-red-700","border","border-red-200");
-        statusEl.textContent = "API not reachable (check ngrok or server).";
+        statusEl.innerHTML = `API not reachable (check ngrok or server).<br><small>${NEXTIFY_API_BASE} – ${e.message}</small>`;
+        console.error("API health check failed", e);
       }
     })();
     document.getElementById("idea-form").addEventListener("submit", async (ev) => {

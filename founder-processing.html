@@ -70,7 +70,15 @@
       .replace(/^http:\/\//, "https://")
       .replace(/\/$/, "");
     // Append ngrok skip parameter to bypass warning page
-    const api = (path) => `${NEXTIFY_API_BASE}${path}${path.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
+    const api = (path) => {
+      try {
+        const url = new URL(path, NEXTIFY_API_BASE);
+        url.searchParams.set("ngrok-skip-browser-warning", "true");
+        return url.toString();
+      } catch {
+        return "";
+      }
+    };
 
     // Define agent stages and descriptions for each journey. Only 'idea' is populated here.
     const AGENTS_BY_JOURNEY = {
@@ -102,10 +110,12 @@
       }
       try {
         const res = await fetch(api('/'), { cache: 'no-store', mode: 'cors' });
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         badge.classList.add('hidden');
-      } catch {
+      } catch (err) {
+        badge.textContent = `API not reachable: ${NEXTIFY_API_BASE} (${err.message})`;
         badge.classList.remove('hidden');
+        console.error('Processing page API check failed', err);
       }
     }
     checkApi();
