@@ -14,7 +14,6 @@
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-  <!-- Header (unchanged) -->
   <header class="bg-white shadow-sm">
     <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
       <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
@@ -26,12 +25,10 @@
     <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Founder • Start with your Idea</h1>
     <p class="text-gray-600 mb-8">Tell us your idea and who it serves. We’ll generate a structured innovation report and guide you through the journey.</p>
 
-    <!-- API status banner (added; styling matches the rest) -->
+    <!-- API status banner -->
     <div id="api-status" class="hidden mb-6 rounded-md px-4 py-3 text-sm"></div>
 
-    <!-- CARD — same structure, spacing, and inputs as before -->
     <form id="idea-form" data-journey="idea" class="bg-white rounded-2xl shadow p-6 md:p-8 space-y-6">
-
       <!-- Idea title -->
       <div>
         <label for="idea_title" class="block text-sm font-semibold text-gray-800 label-required">Idea title</label>
@@ -47,14 +44,13 @@
                 class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
           <option value="" selected disabled>Choose a stage…</option>
           <option>Idea</option>
-          <option>Prototype</option>
           <option>MVP</option>
           <option>Growth</option>
           <option>Scale</option>
         </select>
       </div>
 
-      <!-- Region -->
+      <!-- Region (required, prefilled) -->
       <div>
         <label for="region" class="block text-sm font-semibold text-gray-800 label-required">Region</label>
         <input id="region" name="region" type="text" value="Global" required
@@ -86,7 +82,6 @@
                   class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
       </div>
 
-      <!-- Buttons (unchanged: Cancel + Submit Idea) -->
       <div class="flex items-center gap-3 pt-2">
         <a href="roles.html" class="inline-flex justify-center px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
         <button type="submit" class="inline-flex justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Submit Idea</button>
@@ -95,61 +90,43 @@
   </main>
 
   <script>
-    /* ========= ONLY NEW LOGIC BELOW (network) — UI unchanged ========= */
-
-    // 1) Your reserved ngrok domain — change only if you change the tunnel
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
-    // 2) Helper to bypass ngrok’s warning interstitial reliably
-    const api = (path) =>
-      `${NEXTIFY_API_BASE}${path}${path.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
-
-    // 3) Connectivity banner (kept styling; only the fetch URL changed)
+    // Connectivity banner check
     (async () => {
       const statusEl = document.getElementById("api-status");
       try {
-        const r = await fetch(api("/"), { cache: "no-store", mode: "cors" });
-        const ct = (r.headers.get("content-type") || "").toLowerCase();
-        if (!r.ok || !ct.includes("json")) throw new Error(`Bad status or content-type: ${r.status} ${ct}`);
+        const r = await fetch(NEXTIFY_API_BASE + "/", { cache: "no-store" });
+        const ct = r.headers.get("content-type") || "";
+        if (!r.ok || !ct.includes("application/json")) throw new Error("Non-JSON");
         statusEl.classList.remove("hidden");
         statusEl.classList.add("bg-green-50","text-green-700","border","border-green-200");
         statusEl.textContent = "API connected successfully.";
       } catch (e) {
         statusEl.classList.remove("hidden");
         statusEl.classList.add("bg-red-50","text-red-700","border","border-red-200");
-        statusEl.textContent = "API not reachable (ngrok interstitial/CORS). " + (e?.message || "");
+        statusEl.textContent = "API not reachable (check ngrok or server).";
       }
     })();
 
-    // 4) Submit → /api/submit → redirect to processing page (UI intact)
     (function () {
       const form = document.getElementById("idea-form");
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const journeyType = form.dataset.journey;
         const payload = Object.fromEntries(new FormData(form).entries());
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Submitting…";
-
         try {
-          const res = await fetch(api("/api/submit"), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+          const res = await fetch(NEXTIFY_API_BASE + "/api/submit", {
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ journey_type: journeyType, payload })
           });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok || !data.job_id) throw new Error(data.detail || "Submit failed");
-
-          const q = new URLSearchParams({ job_id: data.job_id, journey: journeyType });
+          if (!res.ok) throw new Error("Submit failed");
+          const { job_id } = await res.json();
+          const q = new URLSearchParams({ job_id, journey: journeyType });
           window.location.href = `founder-processing.html?${q.toString()}`;
         } catch (err) {
           console.error(err);
           alert("Sorry, something went wrong submitting your request.");
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalText;
         }
       });
     })();
