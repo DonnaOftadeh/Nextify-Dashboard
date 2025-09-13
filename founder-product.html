@@ -26,6 +26,9 @@
     <p class="text-gray-600 mb-8">Describe the product you want to build. We’ll analyze scope, competitors, risks, and a path to MVP.</p>
 
     <form id="founder-form" data-journey="product" class="bg-white rounded-2xl shadow p-6 md:p-8 space-y-6">
+      <div class="p-4 mb-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+        <p class="text-sm text-blue-700">Submissions for this journey are coming soon.</p>
+      </div>
       <!-- Product scope/title -->
       <div>
         <label for="product_scope" class="block text-sm font-semibold text-gray-800 label-required">Product scope / title</label>
@@ -66,35 +69,15 @@
                   class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
       </div>
 
-      <div class="flex items-center gap-3 pt-2">
-        <a href="roles.html" class="inline-flex justify-center px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
-        <button type="submit" class="inline-flex justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Continue</button>
+      <div class="pt-2 flex flex-col items-center gap-4">
+        <p class="text-gray-700">Submissions for this journey are coming soon.</p>
+        <div class="flex items-center gap-3">
+          <a href="roles.html" class="inline-flex justify-center px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Back</a>
+          <a href="founder-idea.html"
+             class="inline-flex justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Go to idea form</a>
+        </div>
       </div>
     </form>
   </main>
-
-  <script>
-    (function () {
-      const form = document.getElementById("founder-form");
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const journeyType = form.dataset.journey;
-        const payload = Object.fromEntries(new FormData(form).entries());
-        try {
-          const res = await fetch("http://127.0.0.1:8000/api/submit", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ journey_type: journeyType, payload })
-          });
-          if (!res.ok) throw new Error("Submit failed");
-          const { job_id } = await res.json();
-          const q = new URLSearchParams({ job_id, journey: journeyType });
-          window.location.href = `founder-processing.html?${q.toString()}`;
-        } catch (err) {
-          console.error(err);
-          alert("Sorry, something went wrong submitting your request.");
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
