@@ -66,7 +66,8 @@
 
   <script>
     // Base API URL (ngrok tunnel). Change only if your tunnel changes.
-    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    const NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") ||
+      "https://gilbert-unabridged-rumbly.ngrok-free.app";
     // Append ngrok skip parameter to bypass warning page
     const api = (path) => `${NEXTIFY_API_BASE}${path}${path.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
 
@@ -112,7 +113,7 @@
 
     // Read job and journey from query parameters
     const params = new URLSearchParams(window.location.search);
-    const jobId = params.get('job');
+    const jobId = params.get('job_id');
     const journey = (params.get('journey') || 'idea').toLowerCase();
     const stages = AGENTS_BY_JOURNEY[journey] || [];
 
