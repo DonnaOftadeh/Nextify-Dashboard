@@ -14,6 +14,7 @@
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
+  <!-- Header (unchanged) -->
   <header class="bg-white shadow-sm">
     <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
       <a href="index.html" class="text-xl font-bold text-blue-700">Nextify</a>
@@ -25,10 +26,12 @@
     <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Founder • Start with your Idea</h1>
     <p class="text-gray-600 mb-8">Tell us your idea and who it serves. We’ll generate a structured innovation report and guide you through the journey.</p>
 
-    <!-- API status banner -->
+    <!-- API status banner (added; styling matches the rest) -->
     <div id="api-status" class="hidden mb-6 rounded-md px-4 py-3 text-sm"></div>
 
+    <!-- CARD — same structure, spacing, and inputs as before -->
     <form id="idea-form" data-journey="idea" class="bg-white rounded-2xl shadow p-6 md:p-8 space-y-6">
+
       <!-- Idea title -->
       <div>
         <label for="idea_title" class="block text-sm font-semibold text-gray-800 label-required">Idea title</label>
@@ -51,7 +54,7 @@
         </select>
       </div>
 
-      <!-- Region (required, prefilled) -->
+      <!-- Region -->
       <div>
         <label for="region" class="block text-sm font-semibold text-gray-800 label-required">Region</label>
         <input id="region" name="region" type="text" value="Global" required
@@ -83,6 +86,7 @@
                   class="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
       </div>
 
+      <!-- Buttons (unchanged: Cancel + Submit Idea) -->
       <div class="flex items-center gap-3 pt-2">
         <a href="roles.html" class="inline-flex justify-center px-5 py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</a>
         <button type="submit" class="inline-flex justify-center px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Submit Idea</button>
@@ -91,11 +95,16 @@
   </main>
 
   <script>
-    // --- API base and ngrok bypass (no layout changes) ---
-    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
-    const api = (path) => `${NEXTIFY_API_BASE}${path}${path.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
+    /* ========= ONLY NEW LOGIC BELOW (network) — UI unchanged ========= */
 
-    // Connectivity banner (kept same visual, only fetch line changed)
+    // 1) Your reserved ngrok domain — change only if you change the tunnel
+    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+
+    // 2) Helper to bypass ngrok’s warning interstitial reliably
+    const api = (path) =>
+      `${NEXTIFY_API_BASE}${path}${path.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
+
+    // 3) Connectivity banner (kept styling; only the fetch URL changed)
     (async () => {
       const statusEl = document.getElementById("api-status");
       try {
@@ -108,11 +117,11 @@
       } catch (e) {
         statusEl.classList.remove("hidden");
         statusEl.classList.add("bg-red-50","text-red-700","border","border-red-200");
-        statusEl.textContent = "API not reachable (CORS/ngrok). " + (e?.message || "");
+        statusEl.textContent = "API not reachable (ngrok interstitial/CORS). " + (e?.message || "");
       }
     })();
 
-    // Submit → /api/submit → redirect to processing page (markup unchanged)
+    // 4) Submit → /api/submit → redirect to processing page (UI intact)
     (function () {
       const form = document.getElementById("idea-form");
       form.addEventListener("submit", async (e) => {
