@@ -5,18 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nextify — Start with your Idea</title>
 
-  <!-- ⬇️ Use the exact same assets your founder-industry.html uses -->
+  <!-- Use the same assets your other founder pages use -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     html { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; }
-    /* Match the same control heights & spacing your industry page uses */
+
+    /* Match control sizes used across your other forms */
     .nf-input { @apply block w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm h-12 px-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500; }
     .nf-select { @apply nf-input pr-8; }
-    .nf-area-lg { @apply w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500; height: 9.5rem; resize: vertical; }
-    .nf-area-sm { @apply w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500; height: 6.5rem; resize: vertical; }
+
+    /* Large text areas for easy typing */
+    .nf-area-lg   { @apply w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500; height: 10.5rem; resize: vertical; }
+
+    /* Red asterisk for required labels */
     .req::after { content: " *"; color: #dc2626; }
   </style>
 </head>
@@ -29,18 +33,19 @@
       <p class="mt-2 text-gray-600">Tell us your idea; we’ll generate a structured innovation report.</p>
     </header>
 
-    <!-- API banner (same behavior as industry) -->
+    <!-- API status banner (same behavior as other forms) -->
     <div id="api-status" class="hidden mb-6 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700"></div>
 
-    <!-- FORM — layout and sizing mirrors founder-industry -->
+    <!-- Form (keeps same structure/order as your other pages) -->
     <form id="idea-form" class="space-y-6">
       <!-- Idea title -->
       <div>
         <label class="block text-gray-900 font-medium req">Idea title</label>
-        <input name="idea_title" type="text" class="nf-input" placeholder="e.g., Global Innovation Platform" required />
+        <input name="idea_title" type="text" class="nf-input"
+               placeholder="e.g., Global Innovation Platform" required />
       </div>
 
-      <!-- Row: Stage + Region (same two-column grid as industry) -->
+      <!-- Row: Stage + Region (two-column, like other forms) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block text-gray-900 font-medium req">Current stage</label>
@@ -54,32 +59,38 @@
         </div>
 
         <div>
-          <label class="block text-gray-900 font-medium">Region</label>
-          <input name="region" type="text" value="Global" class="nf-input" />
+          <label class="block text-gray-900 font-medium req">Region</label>
+          <!-- required + prefilled with Global -->
+          <input name="region" type="text" class="nf-input" value="Global" required />
           <p class="mt-2 text-xs text-gray-500">Default is Global; you can specify e.g., Berlin, EU, US-East.</p>
         </div>
       </div>
 
-      <!-- Problem (taller, like industry long-text areas) -->
+      <!-- Problem (large textarea) -->
       <div>
         <label class="block text-gray-900 font-medium req">What problem does it solve?</label>
-        <textarea name="problem" class="nf-area-lg" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented." required></textarea>
+        <textarea name="problem" class="nf-area-lg"
+          placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."
+          required></textarea>
       </div>
 
-      <!-- Target users (standard control height, like other inputs on industry) -->
+      <!-- Target users (single-line input to match other forms) -->
       <div>
         <label class="block text-gray-900 font-medium req">Who is it for?</label>
-        <input name="target_users" type="text" class="nf-input" placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
+        <input name="target_users" type="text" class="nf-input"
+               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
       </div>
 
-      <!-- Constraints (slightly taller but smaller than problem, just like industry’s ‘notes’ fields) -->
+      <!-- Constraints (now large + user-friendly) -->
       <div>
         <label class="block text-gray-900 font-medium">Constraints (optional)</label>
-        <textarea name="constraints" class="nf-area-sm" placeholder=""></textarea>
+        <textarea name="constraints" class="nf-area-lg"
+          placeholder=""></textarea>
       </div>
 
       <div class="pt-2">
-        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-5 py-3 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <button type="submit"
+          class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-5 py-3 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Submit Idea
         </button>
       </div>
@@ -87,10 +98,11 @@
   </main>
 
   <script>
-    // === CONFIG: put your current ngrok HTTPS URL (same as industry page uses) ===
+    // === Set this to your active ngrok https URL ===
+    // Keep it the same across all forms so everything stays in sync.
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
-    // Same reachability check as your industry page
+    // Show a non-JSON banner if the tunnel isn’t reachable
     (async () => {
       try {
         const r = await fetch(NEXTIFY_API_BASE + "/", { cache: "no-store" });
@@ -103,7 +115,7 @@
       }
     })();
 
-    // Submit (identical flow; only journey_type differs)
+    // Submit → backend → processing page (same as your other flows)
     document.getElementById("idea-form").addEventListener("submit", async (ev) => {
       ev.preventDefault();
 
@@ -114,8 +126,9 @@
         problem:       (fd.get("problem")       || "").trim(),
         target_users:  (fd.get("target_users")  || "").trim(),
         constraints:   (fd.get("constraints")   || "").trim(),
-        region:        (fd.get("region")        || "Global").trim()
+        region:        (fd.get("region")        || "Global").trim()   // required & prefilled
       };
+
       const body = { journey_type: "idea", payload };
 
       const btn = ev.submitter || ev.target.querySelector("button[type=submit]");
@@ -131,7 +144,7 @@
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
 
-        // Same processing page pattern as industry
+        // Send user to the same processing page you use elsewhere
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (err) {
         alert("Submit failed. Please verify API URL/ngrok/CORS.\n\n" + err.message);
