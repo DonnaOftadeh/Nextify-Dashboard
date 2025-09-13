@@ -76,15 +76,20 @@
     </form>
   </main>
   <script>
-    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    const NEXTIFY_API_BASE = (localStorage.getItem("NEXTIFY_API_BASE") || "").replace(/\/$/, "");
     // Helper to bypass ngrok’s browser warning page by appending a query param
     const api = (path) => NEXTIFY_API_BASE + path + (path.includes('?') ? '&' : '?') + 'ngrok-skip-browser-warning=true';
     (async () => {
       const statusEl = document.getElementById("api-status");
+      if (!NEXTIFY_API_BASE) {
+        statusEl.classList.remove("hidden");
+        statusEl.classList.add("bg-yellow-50","text-yellow-700","border","border-yellow-200");
+        statusEl.innerHTML = 'API base not set. <a href="set-ngork.html" class="underline">Configure ngrok</a>.';
+        return;
+      }
       try {
-        const r = await fetch(api("/"), { cache: "no-store", mode: "cors" });
-        const ct = (r.headers.get("content-type") || "").toLowerCase();
-        if (!r.ok || !ct.includes("json")) throw new Error(`Bad status or type: ${r.status} ${ct}`);
+        const r = await fetch(api("/"), { cache: "no-store" });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
         statusEl.classList.remove("hidden");
         statusEl.classList.add("bg-green-50","text-green-700","border","border-green-200");
         statusEl.textContent = "API connected successfully.";
@@ -96,6 +101,10 @@
     })();
     document.getElementById("idea-form").addEventListener("submit", async (ev) => {
       ev.preventDefault();
+      if (!NEXTIFY_API_BASE) {
+        alert('API base not set. Visit the set-ngork page first.');
+        return;
+      }
       const fd = new FormData(ev.target);
       const payload = {
         idea_title: (fd.get("idea_title") || "").trim(),
