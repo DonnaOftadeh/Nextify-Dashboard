@@ -76,7 +76,8 @@
     </form>
   </main>
   <script>
-    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    const NEXTIFY_API_BASE = localStorage.getItem("NEXTIFY_API_BASE") ||
+      "https://gilbert-unabridged-rumbly.ngrok-free.app";
     // Helper to bypass ngrok’s browser warning page by appending a query param
     const api = (path) => NEXTIFY_API_BASE + path + (path.includes('?') ? '&' : '?') + 'ngrok-skip-browser-warning=true';
     (async () => {
