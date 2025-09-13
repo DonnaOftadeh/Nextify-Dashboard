@@ -5,23 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nextify — Start with your Idea</title>
 
-  <!-- Use the same assets your other founder pages use -->
+  <!-- Keep the same stack your other founder pages use -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   <style>
     html { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; }
 
-    /* Match control sizes used across your other forms */
-    .nf-input { @apply block w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm h-12 px-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500; }
-    .nf-select { @apply nf-input pr-8; }
+    /* === Base control sizes (same look as industry form) === */
+    .nf-input, .nf-select {
+      display:block; width:100%;
+      border-radius:0.375rem; /* rounded-md */
+      border:1px solid rgb(209 213 219);
+      background:#fff; color:#111827;
+      box-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);
+      height:3rem; /* h-12 */
+      padding:0 0.75rem; /* px-3 */
+      font-size:1rem; line-height:1.5rem;
+      outline:none;
+    }
+    .nf-input:focus, .nf-select:focus,
+    textarea.nf-area-lg:focus {
+      --tw-ring-color: #6366f1; /* indigo-500 */
+      border-color:#6366f1; box-shadow:0 0 0 2px var(--tw-ring-color);
+    }
 
-    /* Large text areas for easy typing */
-    .nf-area-lg   { @apply w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500; height: 10.5rem; resize: vertical; }
+    /* === FORCED textarea height + no tiny scrollbars === */
+    /* Use very high specificity and !important to win over other CSS */
+    form#idea-form textarea.nf-area-lg {
+      height: 12.5rem !important;   /* ≈ 200px (taller than before) */
+      min-height: 12.5rem !important;
+      max-height: 28rem !important;
+      resize: vertical;
+      overflow: auto;
+      padding:0.5rem 0.75rem; /* py-2 px-3 */
+      border:1px solid rgb(209 213 219);
+      border-radius:0.375rem;
+      box-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);
+      background:#fff; color:#111827; font-size:1rem;
+    }
 
-    /* Red asterisk for required labels */
-    .req::after { content: " *"; color: #dc2626; }
+    /* Required asterisk in red */
+    .req::after { content:" *"; color:#dc2626; }
   </style>
 </head>
 <body class="bg-white min-h-screen">
@@ -33,10 +60,10 @@
       <p class="mt-2 text-gray-600">Tell us your idea; we’ll generate a structured innovation report.</p>
     </header>
 
-    <!-- API status banner (same behavior as other forms) -->
+    <!-- API banner (same behavior as other forms) -->
     <div id="api-status" class="hidden mb-6 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700"></div>
 
-    <!-- Form (keeps same structure/order as your other pages) -->
+    <!-- ====== FORM (layout mirrors your industry page) ====== -->
     <form id="idea-form" class="space-y-6">
       <!-- Idea title -->
       <div>
@@ -45,7 +72,7 @@
                placeholder="e.g., Global Innovation Platform" required />
       </div>
 
-      <!-- Row: Stage + Region (two-column, like other forms) -->
+      <!-- Row: Stage + Region -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block text-gray-900 font-medium req">Current stage</label>
@@ -60,7 +87,7 @@
 
         <div>
           <label class="block text-gray-900 font-medium req">Region</label>
-          <!-- required + prefilled with Global -->
+          <!-- Required + prefilled -->
           <input name="region" type="text" class="nf-input" value="Global" required />
           <p class="mt-2 text-xs text-gray-500">Default is Global; you can specify e.g., Berlin, EU, US-East.</p>
         </div>
@@ -74,18 +101,17 @@
           required></textarea>
       </div>
 
-      <!-- Target users (single-line input to match other forms) -->
+      <!-- Target users (single line) -->
       <div>
         <label class="block text-gray-900 font-medium req">Who is it for?</label>
         <input name="target_users" type="text" class="nf-input"
                placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
       </div>
 
-      <!-- Constraints (now large + user-friendly) -->
+      <!-- Constraints (large textarea — same height as Problem) -->
       <div>
         <label class="block text-gray-900 font-medium">Constraints (optional)</label>
-        <textarea name="constraints" class="nf-area-lg"
-          placeholder=""></textarea>
+        <textarea name="constraints" class="nf-area-lg" placeholder=""></textarea>
       </div>
 
       <div class="pt-2">
@@ -98,11 +124,10 @@
   </main>
 
   <script>
-    // === Set this to your active ngrok https URL ===
-    // Keep it the same across all forms so everything stays in sync.
+    // === Use your active ngrok URL (HTTPS) ===
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
-    // Show a non-JSON banner if the tunnel isn’t reachable
+    // Connectivity banner (non-JSON = not reachable for our app’s needs)
     (async () => {
       try {
         const r = await fetch(NEXTIFY_API_BASE + "/", { cache: "no-store" });
@@ -115,7 +140,7 @@
       }
     })();
 
-    // Submit → backend → processing page (same as your other flows)
+    // Submit → /api/submit → redirect to processing page
     document.getElementById("idea-form").addEventListener("submit", async (ev) => {
       ev.preventDefault();
 
@@ -144,7 +169,6 @@
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
 
-        // Send user to the same processing page you use elsewhere
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (err) {
         alert("Submit failed. Please verify API URL/ngrok/CORS.\n\n" + err.message);
