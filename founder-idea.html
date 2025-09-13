@@ -3,57 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nextify – Submit Your Idea</title>
+  <title>Nextify – Start with your Idea</title>
 
-  <!-- Tailwind CSS via CDN -->
+  <!-- Tailwind (same stack as other forms) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Inter font (same look as other forms) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Inter font for visual parity -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
     html { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; }
-    .required::after { content: " *"; color: #dc2626; } /* red asterisk */
+    .req::after { content: " *"; color: #dc2626; }
 
-    /* One height to rule them all (≈56px). Change h-14 below if you want taller/shorter. */
-    .nf-field {
-      @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm h-14 px-4;
+    /* Baseline control look (matches your other pages) */
+    .nf-input {
+      @apply block w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm
+             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+             text-base h-12 px-3;
     }
 
-    /* Textareas use the same exact height (single-line look but taller). */
-    .nf-textarea {
-      @apply nf-field;           /* inherits h-14 */
-      resize: none;              /* keep the height consistent */
-      line-height: 1.25rem;      /* comfortable baseline inside */
-      padding-top: 0.625rem;     /* match input padding look */
-      padding-bottom: 0.625rem;
+    /* For selects (same height as inputs) */
+    .nf-select {
+      @apply nf-input pr-8;
+    }
+
+    /* Taller textareas only for descriptive fields */
+    .nf-textarea-sm { /* use for constraints (a little taller) */
+      @apply w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm
+             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+             text-base px-3 py-2;
+      height: 6.5rem; /* ~104px */
+      resize: vertical;
+    }
+    .nf-textarea-lg { /* use for problem (larger) */
+      @apply w-full rounded-md border border-gray-300 bg-white text-gray-900 shadow-sm
+             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+             text-base px-3 py-2;
+      height: 9.5rem; /* ~152px */
+      resize: vertical;
     }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <main class="flex-1 max-w-3xl mx-auto p-6">
-    <a href="index.html" class="text-sm text-gray-600 hover:text-gray-900">← Back</a>
-    <h1 class="text-3xl font-bold mt-4">Start with your Idea</h1>
-    <p class="mt-1 text-gray-600">Tell us your idea; we’ll generate a structured innovation report.</p>
+<body class="bg-white min-h-screen">
+  <main class="max-w-5xl mx-auto px-6 sm:px-10 lg:px-16 py-8">
+    <a href="roles-founder.html" class="text-sm text-gray-600 hover:text-gray-900">← Back</a>
 
-    <!-- API status -->
-    <div id="api-status" class="mt-4 hidden p-3 rounded bg-red-50 text-red-700 text-sm"></div>
+    <header class="mt-3 mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">Start with your Idea</h1>
+      <p class="mt-2 text-gray-600">Tell us your idea; we’ll generate a structured innovation report.</p>
+    </header>
 
-    <form id="idea-form" class="mt-6 space-y-6">
-      <!-- Idea Title -->
+    <!-- API banner (hidden until needed) -->
+    <div id="api-status" class="hidden mb-6 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+
+    <form id="idea-form" class="space-y-6">
+      <!-- Idea title -->
       <div>
-        <label class="block font-medium text-gray-900 required">Idea title</label>
-        <input type="text" name="idea_title" placeholder="e.g., Global Innovation Platform"
-               class="nf-field" required>
+        <label class="block text-gray-900 font-medium req">Idea title</label>
+        <input name="idea_title" type="text"
+               class="nf-input"
+               placeholder="e.g., Global Innovation Platform" required />
       </div>
 
-      <!-- Stage + Region -->
+      <!-- Row: stage + region -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block font-medium text-gray-900 required">Current stage</label>
-          <select name="current_stage" class="nf-field" required>
+          <label class="block text-gray-900 font-medium req">Current stage</label>
+          <select name="current_stage" class="nf-select" required>
             <option value="">Choose a stage...</option>
             <option>Idea</option>
             <option>MVP</option>
@@ -61,39 +79,40 @@
             <option>Scale</option>
           </select>
         </div>
+
         <div>
-          <label class="block font-medium text-gray-900">Region</label>
-          <input type="text" name="region" value="Global" class="nf-field">
-          <p class="mt-2 text-xs text-gray-500">Default is Global; you can specify e.g., Berlin, EU, US-East.</p>
+          <label class="block text-gray-900 font-medium">Region</label>
+          <input name="region" type="text" value="Global" class="nf-input" />
+          <p class="mt-2 text-xs text-gray-500">
+            Default is Global; you can specify e.g., Berlin, EU, US-East.
+          </p>
         </div>
       </div>
 
-      <!-- Problem -->
+      <!-- Problem (taller) -->
       <div>
-        <label class="block font-medium text-gray-900 required">What problem does it solve?</label>
-        <textarea name="problem"
-                  placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."
-                  class="nf-textarea" required></textarea>
+        <label class="block text-gray-900 font-medium req">What problem does it solve?</label>
+        <textarea name="problem" class="nf-textarea-lg" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented." required></textarea>
       </div>
 
-      <!-- Target Users -->
+      <!-- Target users (normal height like other forms) -->
       <div>
-        <label class="block font-medium text-gray-900 required">Who is it for?</label>
-        <input type="text" name="target_users"
-               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators"
-               class="nf-field" required>
+        <label class="block text-gray-900 font-medium req">Who is it for?</label>
+        <input name="target_users" type="text"
+               class="nf-input"
+               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators" required />
       </div>
 
-      <!-- Constraints -->
+      <!-- Constraints (a bit taller than inputs) -->
       <div>
-        <label class="block font-medium text-gray-900">Constraints (optional)</label>
-        <textarea name="constraints" class="nf-textarea" placeholder=""></textarea>
+        <label class="block text-gray-900 font-medium">Constraints (optional)</label>
+        <textarea name="constraints" class="nf-textarea-sm" placeholder=""></textarea>
       </div>
 
-      <!-- Submit -->
-      <div>
+      <div class="pt-2">
         <button type="submit"
-                class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-5 py-3 text-white font-medium
+                       hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Submit Idea
         </button>
       </div>
@@ -101,16 +120,17 @@
   </main>
 
   <script>
-    // ==== CONFIG: set to your current ngrok https URL ====
+    // ========= CONFIG: Set your current ngrok HTTPS URL here =========
+    // Example: "https://gilbert-unbridged-rumbly.ngrok-free.app"
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
+    // Optional reachability check (keeps your banner behavior consistent with other forms)
     (async () => {
       try {
-        const resp = await fetch(NEXTIFY_API_BASE + "/", { cache: "no-store" });
-        // Expect JSON. If the root returns JSON fine, leave banner hidden.
-        const ct = resp.headers.get("content-type") || "";
-        if (!resp.ok || !ct.includes("application/json")) {
-          throw new Error("Non-JSON or error from API root");
+        const r = await fetch(NEXTIFY_API_BASE + "/", { cache: "no-store" });
+        const ct = r.headers.get("content-type") || "";
+        if (!r.ok || !ct.includes("application/json")) {
+          throw new Error("Non-JSON or error at API root");
         }
       } catch (err) {
         const el = document.getElementById("api-status");
@@ -119,8 +139,10 @@
       }
     })();
 
+    // Submit -> POST -> go to processing page
     document.getElementById("idea-form").addEventListener("submit", async (ev) => {
       ev.preventDefault();
+
       const fd = new FormData(ev.target);
       const payload = {
         idea_title:    (fd.get("idea_title")    || "").trim(),
@@ -132,19 +154,28 @@
       };
       const body = { journey_type: "idea", payload };
 
+      // Button busy state
+      const btn = ev.submitter || ev.target.querySelector("button[type=submit]");
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Submitting…";
+
       try {
         const resp = await fetch(NEXTIFY_API_BASE + "/api/submit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body)
         });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || resp.statusText);
 
-        // Go to processing page
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+
+        // Navigate to your existing processing page
         window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
       } catch (err) {
-        alert("Submit failed. Please check the API URL / ngrok / CORS.\n\n" + err.message);
+        alert("Submit failed. Please verify the API URL / ngrok / CORS.\n\n" + err.message);
+        btn.disabled = false;
+        btn.textContent = original;
       }
     });
   </script>
