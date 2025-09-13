@@ -3,87 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nextify – Processing</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Nextify • Processing</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <div class="max-w-3xl mx-auto py-8 px-4">
-    <a href="roles-founder.html" class="text-sm text-gray-500">&larr; Back</a>
-    <h1 class="text-3xl font-bold mb-4">Running your analysis</h1>
-
-    <div id="apiBadge" class="hidden bg-red-100 text-red-700 px-3 py-2 rounded mb-4">
-      API: Not reachable
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="p-4 border-b bg-white">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-xl font-bold text-blue-600">Nextify</h1>
     </div>
+  </header>
 
-    <p>Status: <span id="status">—</span></p>
-    <p>Step: <span id="step">—</span></p>
-
-    <div class="w-full bg-gray-200 rounded h-4 mt-2">
-      <div id="bar" class="bg-blue-600 h-4 rounded text-xs text-white text-center" style="width:0%">0%</div>
+  <main class="flex-grow p-6 max-w-2xl mx-auto text-center">
+    <h2 class="text-2xl font-bold mb-4">Processing your Idea</h2>
+    <p class="text-gray-600 mb-6">Our agents are working on your submission. This may take a few moments.</p>
+    <div id="status" class="mb-4 text-gray-700">Initializing…</div>
+    <div class="w-full bg-gray-200 rounded-full h-3">
+      <div id="progress-bar" class="bg-blue-600 h-3 rounded-full" style="width: 5%"></div>
     </div>
-
-    <button id="downloadBtn" disabled
-            class="mt-6 bg-blue-600 text-white px-5 py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50">
-      Download report
-    </button>
-  </div>
+    <button id="download-btn" class="mt-6 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 hidden">Download PDF</button>
+  </main>
 
   <script>
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
 
-    // --- API health check like in founder-idea ---
-    async function checkApi() {
-      const badge = document.getElementById("apiBadge");
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobId = urlParams.get("job_id");
+    const journey = urlParams.get("journey");
+
+    const statusEl = document.getElementById("status");
+    const progressBar = document.getElementById("progress-bar");
+    const downloadBtn = document.getElementById("download-btn");
+
+    async function pollStatus() {
       try {
-        const r = await fetch(`${NEXTIFY_API_BASE}/`, {
-          method: "GET",
-          mode: "cors",
-          cache: "no-store",
-          credentials: "omit",
-          headers: { "Accept": "application/json" }
-        });
-        const ct = (r.headers.get("content-type") || "").toLowerCase();
-        if (!r.ok || !ct.includes("application/json")) {
-          badge.classList.remove("hidden");
-          return;
-        }
+        const r = await fetch(`${NEXTIFY_API_BASE}/api/job/${jobId}`, { headers: NGROK_HEADERS });
         const data = await r.json();
-        if (!data || data.ok !== true) badge.classList.remove("hidden");
-      } catch (e) {
-        badge.classList.remove("hidden");
-      }
-    }
-    checkApi();
+        if (!r.ok) throw new Error(data.detail || "Polling failed");
 
-    // --- Poll job status ---
-    const params = new URLSearchParams(window.location.search);
-    const job = params.get("job");
+        statusEl.textContent = `Status: ${data.status}`;
+        progressBar.style.width = `${data.progress || 0}%`;
 
-    async function poll() {
-      if (!job) return;
-      try {
-        const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${job}`, { cache: "no-store" });
-        const s = await r.json();
-        document.getElementById("status").textContent = s.status || "—";
-        document.getElementById("step").textContent = s.step || "—";
-        const bar = document.getElementById("bar");
-        const pct = s.progress || 0;
-        bar.style.width = pct + "%";
-        bar.textContent = pct + "%";
-
-        if (s.ready) {
-          const btn = document.getElementById("downloadBtn");
-          btn.disabled = false;
-          btn.onclick = () => window.open(`${NEXTIFY_API_BASE}/api/download/${job}`, "_blank");
-          return;
+        if (data.status === "completed") {
+          downloadBtn.classList.remove("hidden");
+          downloadBtn.onclick = () => {
+            window.open(`${NEXTIFY_API_BASE}/api/download/${jobId}`, "_blank");
+          };
+          return; // stop polling
         }
-        setTimeout(poll, 1500);
       } catch (e) {
         console.error("Polling error:", e);
-        setTimeout(poll, 3000);
+        statusEl.textContent = "Error communicating with server.";
       }
+      setTimeout(pollStatus, 2000);
     }
-    poll();
+
+    pollStatus();
   </script>
 </body>
 </html>
