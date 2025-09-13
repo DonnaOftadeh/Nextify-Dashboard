@@ -4,146 +4,128 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nextify – Submit Your Idea</title>
-  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Optional: same font as other forms -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    html { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; }
+    .required:after { content:" *"; color:red; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <div class="max-w-3xl mx-auto py-8 px-4">
-    <a href="roles-founder.html" class="text-sm text-gray-500">&larr; Back</a>
-    <h1 class="text-3xl font-bold mt-2">Start with your Idea</h1>
-    <p class="text-gray-600 mb-4">
-      Tell us your idea; we’ll generate a structured innovation report.
-    </p>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <main class="flex-1 max-w-3xl mx-auto p-6">
+    <a href="index.html" class="text-sm text-gray-600 hover:text-gray-900">← Back</a>
+    <h1 class="text-3xl font-bold mt-4">Start with your Idea</h1>
+    <p class="mt-1 text-gray-600">Tell us your idea; we’ll generate a structured innovation report.</p>
 
-    <div id="apiBadge" class="hidden bg-red-100 text-red-700 px-3 py-2 rounded mb-4">
-      API: Not reachable
-    </div>
+    <!-- API status -->
+    <div id="api-status" class="mt-4 hidden p-3 rounded bg-red-50 text-red-700 text-sm"></div>
 
-    <form id="idea-form" class="space-y-4">
+    <form id="idea-form" class="mt-6 space-y-6">
+      <!-- Idea Title -->
       <div>
-        <label class="block font-semibold">Idea title <span class="text-red-500">*</span></label>
+        <label class="block font-medium text-gray-900 required">Idea title</label>
         <input type="text" name="idea_title" placeholder="e.g., Global Innovation Platform"
-               class="w-full border rounded px-3 py-2" required />
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <!-- Stage + Region -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block font-semibold">Current stage <span class="text-red-500">*</span></label>
-          <select name="current_stage" class="w-full border rounded px-3 py-2" required>
+          <label class="block font-medium text-gray-900 required">Current stage</label>
+          <select name="current_stage"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
             <option value="">Choose a stage...</option>
-            <option>Idea only</option>
-            <option>Prototype</option>
+            <option>Idea</option>
             <option>MVP</option>
             <option>Growth</option>
+            <option>Scale</option>
           </select>
         </div>
         <div>
-          <label class="block font-semibold">Region</label>
+          <label class="block font-medium text-gray-900">Region</label>
           <input type="text" name="region" value="Global"
-                 class="w-full border rounded px-3 py-2" />
-          <p class="text-sm text-gray-500 mt-1">
-            Default is Global; you can specify e.g., Berlin, EU, US-East.
-          </p>
+                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+          <p class="mt-1 text-xs text-gray-500">Default is Global; you can specify e.g., Berlin, EU, US-East.</p>
         </div>
       </div>
 
+      <!-- Problem -->
       <div>
-        <label class="block font-semibold">What problem does it solve? <span class="text-red-500">*</span></label>
-        <textarea name="problem" placeholder="e.g., Founders and accelerators struggle to discover one another globally..."
-                  class="w-full border rounded px-3 py-2" required></textarea>
+        <label class="block font-medium text-gray-900 required">What problem does it solve?</label>
+        <textarea name="problem" rows="3" placeholder="e.g., Founders and accelerators struggle to discover one another globally; discovery and collaboration are fragmented."
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></textarea>
       </div>
 
+      <!-- Target Users -->
       <div>
-        <label class="block font-semibold">Who is it for? <span class="text-red-500">*</span></label>
-        <input type="text" name="target_users"
-               placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators"
-               class="w-full border rounded px-3 py-2" required />
+        <label class="block font-medium text-gray-900 required">Who is it for?</label>
+        <input type="text" name="target_users" placeholder="e.g., Accelerators; Founders; Investors; Kids; Educators"
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
       </div>
 
+      <!-- Constraints -->
       <div>
-        <label class="block font-semibold">Constraints (optional)</label>
-        <textarea name="constraints" class="w-full border rounded px-3 py-2"></textarea>
+        <label class="block font-medium text-gray-900">Constraints (optional)</label>
+        <textarea name="constraints" rows="2"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
       </div>
 
-      <button type="submit"
-              class="bg-blue-600 text-white px-5 py-2 rounded font-medium hover:bg-blue-700">
-        Submit Idea
-      </button>
+      <!-- Submit -->
+      <div>
+        <button type="submit"
+                class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Submit Idea
+        </button>
+      </div>
     </form>
-  </div>
+  </main>
 
   <script>
     // ==== CONFIG: set to your current ngrok https URL ====
     const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
-    // --- Improved API check ---
-    async function checkApi() {
-      const badge = document.getElementById("apiBadge");
+    (async () => {
       try {
-        const r = await fetch(`${NEXTIFY_API_BASE}/`, {
-          method: "GET",
-          mode: "cors",
-          cache: "no-store",
-          credentials: "omit",
-          headers: { "Accept": "application/json" }
-        });
-
-        const ct = (r.headers.get("content-type") || "").toLowerCase();
-        if (!r.ok) {
-          badge.textContent = `API: ${r.status} ${r.statusText}`;
-          badge.classList.remove("hidden");
-          return;
-        }
-        if (!ct.includes("application/json")) {
-          badge.textContent = "API: Not reachable (non-JSON response)";
-          badge.classList.remove("hidden");
-          return;
-        }
-
-        const data = await r.json();
-        if (!data || data.ok !== true) {
-          badge.textContent = "API: Healthcheck failed";
-          badge.classList.remove("hidden");
-          return;
-        }
-        // All good: keep hidden
-      } catch (e) {
-        badge.textContent = `API: Not reachable (${e.message})`;
-        badge.classList.remove("hidden");
+        const resp = await fetch(NEXTIFY_API_BASE + "/", {cache:"no-store"});
+        if (!resp.ok) throw new Error(await resp.text());
+      } catch (err) {
+        document.getElementById("api-status").classList.remove("hidden");
+        document.getElementById("api-status").textContent = "API: Not reachable (non-JSON response)";
       }
-    }
-    checkApi();
-
-    // --- Handle submit ---
-    (function () {
-      const form = document.getElementById("idea-form");
-      form.addEventListener("submit", async (ev) => {
-        ev.preventDefault();
-        const fd = new FormData(form);
-
-        const payload = {
-          idea_title:    (fd.get("idea_title") || "").trim(),
-          current_stage: (fd.get("current_stage") || "").trim(),
-          problem:       (fd.get("problem") || "").trim(),
-          target_users:  (fd.get("target_users") || "").trim(),
-          constraints:   (fd.get("constraints") || "").trim(),
-          region:        (fd.get("region") || "Global").trim()
-        };
-
-        const body = { journey_type: "idea", payload };
-        try {
-          const resp = await fetch(`${NEXTIFY_API_BASE}/api/submit`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-          });
-          const data = await resp.json();
-          if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
-          window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
-        } catch (err) {
-          alert("Submit failed: " + err.message);
-        }
-      });
     })();
+
+    document.getElementById("idea-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(ev.target);
+      const payload = {
+        idea_title: fd.get("idea_title"),
+        current_stage: fd.get("current_stage"),
+        problem: fd.get("problem"),
+        target_users: fd.get("target_users"),
+        constraints: fd.get("constraints"),
+        region: fd.get("region") || "Global"
+      };
+      const body = { journey_type: "idea", payload };
+
+      try {
+        const resp = await fetch(NEXTIFY_API_BASE + "/api/submit", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || resp.statusText);
+        window.location.href = `founder-processing.html?job=${encodeURIComponent(data.job_id)}`;
+      } catch (err) {
+        alert("Submit failed. Check API.\n\n" + err.message);
+      }
+    });
   </script>
 </body>
 </html>
