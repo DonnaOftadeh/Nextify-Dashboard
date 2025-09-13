@@ -65,8 +65,8 @@
   </main>
 
   <script>
-    // Base API URL (ngrok tunnel). Change only if your tunnel changes.
-    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
+    // Base API URL read from local storage; strip trailing slash
+    const NEXTIFY_API_BASE = (localStorage.getItem("NEXTIFY_API_BASE") || "").replace(/\/$/, "");
     // Append ngrok skip parameter to bypass warning page
     const api = (path) => `${NEXTIFY_API_BASE}${path}${path.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
 
@@ -93,18 +93,16 @@
     // Show API connectivity status
     async function checkApi() {
       const badge = document.getElementById('apiBadge');
+      if (!NEXTIFY_API_BASE) {
+        badge.textContent = "API base not set. Configure ngrok first.";
+        badge.classList.remove('hidden');
+        return;
+      }
       try {
         const res = await fetch(api('/'), { cache: 'no-store', mode: 'cors' });
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        if (!res.ok || !ct.includes('json')) {
-          badge.classList.remove('hidden');
-          return;
-        }
-        const data = await res.json();
-        if (!data || data.ok !== true) {
-          badge.classList.remove('hidden');
-        }
-      } catch (err) {
+        if (!res.ok) throw new Error();
+        badge.classList.add('hidden');
+      } catch {
         badge.classList.remove('hidden');
       }
     }
@@ -112,7 +110,7 @@
 
     // Read job and journey from query parameters
     const params = new URLSearchParams(window.location.search);
-    const jobId = params.get('job');
+    const jobId = params.get('job_id');
     const journey = (params.get('journey') || 'idea').toLowerCase();
     const stages = AGENTS_BY_JOURNEY[journey] || [];
 
