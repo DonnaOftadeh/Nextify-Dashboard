@@ -1,118 +1,88 @@
-<!doctype html>
-<html lang="en" class="h-full">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nextify – Processing</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="h-full bg-white text-slate-900">
-  <main class="mx-auto max-w-4xl px-6 py-10">
-    <header class="mb-6">
-      <a href="roles-founder.html" class="text-slate-500 hover:text-slate-700">&larr; Back</a>
-      <h1 class="mt-4 text-4xl font-semibold">Running your analysis</h1>
-      <p id="jobInfo" class="mt-1 text-slate-500">No job id</p>
-    </header>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-3xl mx-auto py-8 px-4">
+    <a href="roles-founder.html" class="text-sm text-gray-500">&larr; Back</a>
+    <h1 class="text-3xl font-bold mb-4">Running your analysis</h1>
 
-    <section class="space-y-3">
-      <div class="text-slate-700">
-        <div><span class="font-semibold">Status:</span> <span id="stat">—</span></div>
-        <div><span class="font-semibold">Step:</span> <span id="step">—</span></div>
-      </div>
+    <div id="apiBadge" class="hidden bg-red-100 text-red-700 px-3 py-2 rounded mb-4">
+      API: Not reachable
+    </div>
 
-      <div class="h-3 w-full rounded bg-slate-200">
-        <div id="bar" class="h-3 rounded bg-blue-500" style="width:0%"></div>
-      </div>
-      <div id="pct" class="text-sm text-slate-500">0%</div>
+    <p>Status: <span id="status">—</span></p>
+    <p>Step: <span id="step">—</span></p>
 
-      <div class="pt-6">
-        <button id="dlBtn" disabled
-                class="rounded-lg bg-blue-600 px-5 py-3 text-white shadow disabled:opacity-40">
-          Download report
-        </button>
-      </div>
+    <div class="w-full bg-gray-200 rounded h-4 mt-2">
+      <div id="bar" class="bg-blue-600 h-4 rounded text-xs text-white text-center" style="width:0%">0%</div>
+    </div>
 
-      <pre id="err" class="whitespace-pre-wrap text-sm text-red-600"></pre>
-    </section>
-  </main>
+    <button id="downloadBtn" disabled
+            class="mt-6 bg-blue-600 text-white px-5 py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50">
+      Download report
+    </button>
+  </div>
 
   <script>
-    // ====== SET THIS if your ngrok URL rotates later ======
-    const NEXTIFY_API_BASE ="https://gilbert-unbridged-rumbly.ngrok-free.app";
-    // ======================================================
+    const NEXTIFY_API_BASE = "https://gilbert-unbridged-rumbly.ngrok-free.app";
 
-    const qs = new URLSearchParams(window.location.search);
-    const job = qs.get("job") || "";
-    document.getElementById("jobInfo").textContent = job ? `Job: ${job}` : "No job id";
-
-    const stat = document.getElementById("stat");
-    const step = document.getElementById("step");
-    const bar  = document.getElementById("bar");
-    const pct  = document.getElementById("pct");
-    const err  = document.getElementById("err");
-    const dlBtn= document.getElementById("dlBtn");
-
-    function setProgress(p) {
-      const v = Math.max(0, Math.min(100, Number(p) || 0));
-      bar.style.width = `${v}%`;
-      pct.textContent = `${v}%`;
-    }
-
-    async function poll() {
-      if (!job) {
-        err.textContent = "Missing job id in the URL. Go back and submit the form again.";
-        return;
-      }
-
-      // quick ping to ensure we’re talking to FastAPI (not HTML)
+    // --- API health check like in founder-idea ---
+    async function checkApi() {
+      const badge = document.getElementById("apiBadge");
       try {
-        const ping = await fetch(`${NEXTIFY_API_BASE}/`, { cache: "no-store" });
-        const ct   = ping.headers.get("content-type") || "";
-        if (!ct.includes("application/json")) {
-          throw new Error(`Backend did not return JSON at '/'. Got ${ct}. Check ngrok URL.`);
-        }
-      } catch (e) {
-        err.textContent = e.message;
-        return;
-      }
-
-      let done = false;
-      while (!done) {
-        try {
-          const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${encodeURIComponent(job)}`, { cache: "no-store" });
-          const ct = r.headers.get("content-type") || "";
-
-          // HARD guard: stop if someone returns HTML (this was your error)
-          if (!ct.includes("application/json")) {
-            const text = await r.text();
-            throw new Error(`Expected JSON but got ${ct}. First bytes: ${text.slice(0, 120)}`);
-          }
-
-          const s = await r.json();
-          stat.textContent = s.status ?? "—";
-          step.textContent = s.step ?? "—";
-          setProgress(s.progress ?? 0);
-
-          if (s.status === "failed") {
-            err.textContent = s.message || "Pipeline failed.";
-            return;
-          }
-          if (s.ready || s.status === "done") {
-            done = true;
-            dlBtn.disabled = false;
-            dlBtn.onclick = () => {
-              window.location.href = `${NEXTIFY_API_BASE}/api/result/${encodeURIComponent(job)}`;
-            };
-            return;
-          }
-        } catch (e) {
-          err.textContent = `Cannot reach backend. ${e.message}`;
+        const r = await fetch(`${NEXTIFY_API_BASE}/`, {
+          method: "GET",
+          mode: "cors",
+          cache: "no-store",
+          credentials: "omit",
+          headers: { "Accept": "application/json" }
+        });
+        const ct = (r.headers.get("content-type") || "").toLowerCase();
+        if (!r.ok || !ct.includes("application/json")) {
+          badge.classList.remove("hidden");
           return;
         }
-        await new Promise(res => setTimeout(res, 1000));
+        const data = await r.json();
+        if (!data || data.ok !== true) badge.classList.remove("hidden");
+      } catch (e) {
+        badge.classList.remove("hidden");
       }
     }
+    checkApi();
 
+    // --- Poll job status ---
+    const params = new URLSearchParams(window.location.search);
+    const job = params.get("job");
+
+    async function poll() {
+      if (!job) return;
+      try {
+        const r = await fetch(`${NEXTIFY_API_BASE}/api/status/${job}`, { cache: "no-store" });
+        const s = await r.json();
+        document.getElementById("status").textContent = s.status || "—";
+        document.getElementById("step").textContent = s.step || "—";
+        const bar = document.getElementById("bar");
+        const pct = s.progress || 0;
+        bar.style.width = pct + "%";
+        bar.textContent = pct + "%";
+
+        if (s.ready) {
+          const btn = document.getElementById("downloadBtn");
+          btn.disabled = false;
+          btn.onclick = () => window.open(`${NEXTIFY_API_BASE}/api/download/${job}`, "_blank");
+          return;
+        }
+        setTimeout(poll, 1500);
+      } catch (e) {
+        console.error("Polling error:", e);
+        setTimeout(poll, 3000);
+      }
+    }
     poll();
   </script>
 </body>
