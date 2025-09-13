@@ -66,7 +66,9 @@
 
   <script>
     // Base API URL read from local storage; strip trailing slash
-    const NEXTIFY_API_BASE = (localStorage.getItem("NEXTIFY_API_BASE") || "").replace(/\/$/, "");
+    const NEXTIFY_API_BASE = (localStorage.getItem("NEXTIFY_API_BASE") || "")
+      .replace(/^http:\/\//, "https://")
+      .replace(/\/$/, "");
     // Append ngrok skip parameter to bypass warning page
     const api = (path) => `${NEXTIFY_API_BASE}${path}${path.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
 

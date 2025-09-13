@@ -6,13 +6,14 @@
   <script>
     (function(){
       const p = new URLSearchParams(location.search);
-      const url = (p.get("url")||"").trim();
+      const raw = (p.get("url")||"").trim();
+      const url = raw.replace(/^http:\/\//, "https://").replace(/\/$/, "");
       if (url.startsWith("https://")) {
         localStorage.setItem("NEXTIFY_API_BASE", url);
         document.write(`<p>Saved API: <code>${url}</code></p><p><a href="roles-founder.html">Back</a></p>`);
       } else {
         document.write(`
-          <form onsubmit="localStorage.setItem('NEXTIFY_API_BASE', this.url.value.trim()); location.href='roles-founder.html'; return false;">
+          <form onsubmit="const u=this.url.value.trim().replace(/^http:\/\//,'https://').replace(/\\/$/,''); localStorage.setItem('NEXTIFY_API_BASE', u); location.href='roles-founder.html'; return false;">
             <input name="url" required placeholder="https://xxxx.ngrok-free.app" style="width:360px; padding:8px"/>
             <button type="submit">Save</button>
           </form>
