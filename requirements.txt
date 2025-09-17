@@ -15,9 +15,18 @@ google-generativeai==0.7.2
 tenacity==8.2.3
 weasyprint==61.2
 
+
+       
+
+# app/app.py
 streamlit>=1.36
-plotly>=5.22
 pandas>=2.2
+plotly>=5.22
+seaborn>=0.13
+matplotlib>=3.8
+
+
 numpy>=1.26
-altair>=5.3   # only if you use it
-pyyaml        # only if you read YAML
+altair>=5.3   
+pyyaml 
+
