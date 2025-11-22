@@ -110,6 +110,7 @@
       const fd = new FormData(ev.target);
       const payload = {
         idea_title: (fd.get("idea_title") || "").trim(),
+        idea_description: (fd.get("idea_description") || "").trim(), 
         current_stage: (fd.get("current_stage") || "").trim(),
         region: (fd.get("region") || "Global").trim(),
         problem: (fd.get("problem") || "").trim(),
