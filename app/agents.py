@@ -6,7 +6,10 @@ import asyncio
 from typing import Dict, Any, Callable, List, Tuple
 
 from .prompts import build_agent_prompts, SYSTEM_GUARDRAILS
-
+try:
+    from .adk_agents import run_multi_agent_adk
+except Exception:
+    run_multi_agent_adk = None
 # ---------------- Provider order ----------------
 def _provider_order() -> List[str]:
     first = (os.getenv("LLM_PROVIDER") or "gemini").strip().lower()
@@ -144,7 +147,29 @@ async def run_multi_agent(submission: Dict[str, Any],
     """
     journey = (submission.get("journey_type") or "").lower().strip()
     payload = submission.get("payload") or {}
-
+    evaluate_stage = payload.pop("evaluate_stage", None)
+    evaluation_model = payload.pop("evaluation_model", None)
+    if journey == "idea" and run_multi_agent_adk:
+        history = await run_multi_agent_adk(
+            payload,
+            progress_cb,
+            evaluate_stage=evaluate_stage,
+            evaluation_model=evaluation_model,
+        )
+        # Merge the ADK outputs and any evaluations into a single report
+        combined_report = "\n\n".join(filter(None, [
+            history.get("brainstorm_md"),
+            history.get("eval_brainstorm_md"),
+            history.get("roadmap_md"),
+            history.get("eval_roadmap_md"),
+            history.get("feature_prioritization_md"),
+            history.get("eval_feature_md"),
+            history.get("okr_planning_md"),
+            history.get("eval_okr_plan_md"),
+            history.get("final_evaluation_md"),
+        ]))
+        return combined_report
+    
     prompts_map: Dict[str, str] = build_agent_prompts(journey, payload)
     if not isinstance(prompts_map, dict) or not prompts_map:
         raise RuntimeError(f"No prompts for journey '{journey}'")

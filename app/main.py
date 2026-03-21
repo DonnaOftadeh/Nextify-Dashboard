@@ -63,9 +63,13 @@ DEJAVU_REG = FONT_DIR / "DejaVuSans.ttf"
 DEJAVU_BOLD = FONT_DIR / "DejaVuSans-Bold.ttf"
 
 UI_STEPS = [
-    "Parse Submission","Agent Orchestration","Howler Whisperer","The Marauder","The Legilimens",
-    "The Seer","Room of Requirement (R1)","The Pensive (v1)","The Headmaster",
-    "Room of Requirement (R2)","The Pensive (v2)","The Sorting Hat","The Story Weaver","Write Report (PDF)"
+    "Parse Submission",
+    "Brainstorming",
+    "Theme/Epic & Roadmap Generation",
+    "Feature Generation & Prioritization",
+    "OKR & Planning",
+    "Evaluation",
+    "Write Report (PDF)"
 ]
 
 # ------------------- Fonts/Styles -------------------
@@ -322,19 +326,19 @@ async def _run_pipeline(job_id: str, submission: Submission):
         job.update(status="running", step=UI_STEPS[0], progress=4, message="Validating…")
         await asyncio.sleep(0.1)
 
-        job.update(step=UI_STEPS[1], progress=7, message="Spinning up agents…")
+        job.update(step=UI_STEPS[1], progress=7, message="Running multi‑agent pipeline...")
         await asyncio.sleep(0.1)
 
         def cb(idx: int, sec_title: str, msg: str):
             job["step"] = sec_title
             job["message"] = msg
             # map steps across 95%
-            job["progress"] = min(7 + int(idx * (88 / 12)), 95)
+            job["progress"] = min(7 + int(idx * (88 / 6)), 95)
 
         report_text = await run_multi_agent(submission.model_dump(), cb)
         job["raw_report"] = report_text or ""
 
-        job.update(step=UI_STEPS[-1], progress=97, message="Writing PDF…")
+        job.update(step=UI_STEPS[-1], progress=97, message="Generating final report…")
         await asyncio.sleep(0.2)
 
         pdf_path = generate_pdf(job_id, submission.journey_type, submission.payload, report_text)
